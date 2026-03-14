@@ -1,0 +1,8 @@
+{
+  "name": "fractal",
+  "description": "Recursive predicate primitive for human+agent collaboration. Planning, delivery, review, ship, and try — operating on .fractal/ node directories within any project repo.",
+  "version": "0.1.0",
+  "author": {
+    "name": "rmolines"
+  }
+}

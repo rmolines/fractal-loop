@@ -59,9 +59,9 @@ execution cycle live inside the node.
   root.md                    # active node pointer + history of root changes
   dados-ciclofaixas/         # predicate node (child of root)
     predicate.md             # falsifiable condition, status, created date, notes
-    plan.md                  # from /launchpad:planning
-    results.md               # from /launchpad:delivery
-    review.md                # from /launchpad:review
+    plan.md                  # from /fractal:planning
+    results.md               # from /fractal:delivery
+    review.md                # from /fractal:review
     endpoint-geojson/        # nested predicate (grandchild)
       predicate.md
       plan.md
@@ -134,7 +134,7 @@ A new session reads `predicate.md` and has full context. If notes are empty, con
 - Depth = nesting of directories
 - Status is in `predicate.md` frontmatter, execution state is derived from artifacts
 - `active_node` in `root.md` is a relative path to the active node's directory
-- Cycle artifacts (`plan.md`, `results.md`, `review.md`) follow the same format as Launchpad
+- Cycle artifacts (`plan.md`, `results.md`, `review.md`) follow schemas in `~/git/fractal/templates/schemas.md`
 - `ls` shows the tree. `cat` shows the state. No parser needed.
 
 ---
@@ -178,7 +178,7 @@ The predicate is trivial enough to implement directly in one shot. Criteria:
 - No research needed
 
 If yes → propose to the user: "Este predicado é simples o suficiente pra um try. Concordo?"
-If confirmed → invoke `/launchpad:try` with the predicate as the task description.
+If confirmed → invoke `/fractal:try` with the predicate text as the task description.
 After try completes → ask user to validate the predicate was satisfied.
 
 **Check 3: Can a full cycle satisfy it?**
@@ -189,8 +189,10 @@ can handle it. Criteria:
 - Testable/verifiable result
 
 If yes → propose to the user: "Este predicado precisa de um ciclo completo. Concordo?"
-If confirmed → invoke `/launchpad:planning` with the predicate, then follow with
-delivery → review → ship. Artifacts are saved inside the node directory.
+If confirmed → invoke `/fractal:planning` with the node directory path as argument
+(e.g. `.fractal/dados-ciclofaixas`), then follow with `/fractal:delivery`,
+`/fractal:review`, `/fractal:ship` — each receiving the same node path.
+Artifacts are saved inside the node directory.
 After cycle completes → ask user to validate the predicate was satisfied.
 
 **Check 4: None of the above → subdivide**
@@ -262,4 +264,4 @@ When called with no arguments and `.fractal/` exists:
 - **The filesystem is truth.** Always read before acting, always save after acting.
 - **HITL always.** Validate every proposed predicate. Validate every result.
 - **Subagents use model: sonnet.** Never opus in a subagent.
-- **Discovery is the primitive.** Every evaluation of a predicate IS discovery. Don't invoke `/launchpad:discovery` separately — this skill replaces it.
+- **Discovery is the primitive.** Every evaluation of a predicate IS discovery. Don't invoke `/fractal:discovery` separately — this skill replaces it.
