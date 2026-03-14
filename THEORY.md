@@ -4,6 +4,8 @@
 
 Frameworks de planejamento para agentes de código impõem taxonomias rígidas com lifecycles fixos. Na prática: planos quebram no contato com a realidade, hierarquias são arbitrárias, e artefatos ficam stale entre sessões.
 
+O Launchpad (framework anterior) impunha mission → stage → module com lifecycle discovery → planning → delivery → review → ship. Funcionava, mas a hierarquia era arbitrária e o plano era contrato que não se adaptava.
+
 **Condição de sucesso:** uma única operação recursiva que funciona identicamente em qualquer escala, de "criar um app" a "implementar essa função", onde o plano nunca fica stale porque não existe plano — existe só o próximo predicado.
 
 ---
@@ -13,16 +15,36 @@ Frameworks de planejamento para agentes de código impõem taxonomias rígidas c
 ### Operação fundamental
 
 ```
-dado um OBJETIVO:
-  1. extrair o verdadeiro objetivo (pode não ser o que foi pedido)
-  2. definir o PRÓXIMO PREDICADO — o maior objetivo que temos confiança
-     de progredir pro pai E que o executor consegue satisfazer
-  3. decidir: EXECUTAR (satisfazer diretamente) ou SUBDIVIDIR (gerar predicados filhos)?
-  4. se executar → validar predicado → voltar a 2 com estado atualizado
-  5. se subdividir → aplicar esta mesma operação ao primeiro predicado filho
+// ponto de entrada
+predicado_raiz ← extrair_objetivo(humano)  // pré-condição, não parte da primitiva
+arbol(predicado_raiz)
+
+arbol(predicado):
+  se inatingível(predicado):
+    podar(predicado)
+    retorna podado
+
+  senão se try_consegue_satisfazer(predicado):
+    try(predicado)
+    humano valida → satisfeito | arbol(predicado)
+
+  senão se ciclo_consegue_satisfazer(predicado):
+    ciclo(predicado)  // discovery → delivery → review → ship
+    humano valida → satisfeito | arbol(predicado)
+
+  senão:
+    // escolhe o sub-predicado que, satisfeito, mais reduz a incerteza
+    // sobre como satisfazer o pai — não o mais fácil, nem o mais
+    // importante, mas o que mais clarifica o caminho
+    filho ← propor sub-predicado
+    humano valida proposta:
+      se aceita → arbol(filho), depois arbol(predicado)
+      se rejeita → arbol(predicado)  // propõe outro filho
 ```
 
 A operação é fractal — auto-similar em qualquer escala. Mesma estrutura, diferentes constantes de tempo.
+
+A árvore cresce lazy — um filho por vez. Depois de satisfazer um filho, o pai é re-avaliado: talvez já seja satisfazível, talvez precise de outro filho. A re-avaliação decide.
 
 ### Árvore de predicados, não de tarefas
 
@@ -36,16 +58,6 @@ Predicado raiz: "ciclistas em SP conseguem ver ciclofaixas em tempo real no celu
   └─ Predicado filho 3: "app funciona offline no celular"
 ```
 
-### Definição do predicado
-
-> O maior objetivo que temos confiança de progredir para o objetivo pai E que o agente é capaz de executar como unidade contínua de trabalho.
-
-Dois eixos governam o tamanho:
-- **Confiança** — certeza de que satisfazer este predicado progride pro pai
-- **Capacidade** — o executor consegue satisfazê-lo diretamente
-
-Dial conservador/agressivo: predicados menores = mais checkpoints, mais custo, mais segurança. Predicados maiores = menos checkpoints, menos custo, mais risco.
-
 ### Closure property
 
 Cada nível da árvore herda o mesmo tipo (predicado falsificável). Satisfação do filho contribui pra satisfação do pai. A álgebra é fechada por construção — não precisa de mecanismo extra de composição.
@@ -54,12 +66,12 @@ Cada nível da árvore herda o mesmo tipo (predicado falsificável). Satisfaçã
 
 ## Extração do objetivo
 
-A etapa mais crítica. O agente investe energia máxima em:
+Pré-condição da primitiva, não parte dela. Antes da primeira chamada `arbol()`, o agente investe energia máxima em:
 1. Descobrir o objetivo real por trás do pedido (Socratic extraction)
 2. Antecipar o "cair na real" — quando o humano vai descobrir que queria outra coisa
 3. Tornar o objetivo falsificável — condição concreta que prova que foi atingido
 
-Sem objetivo claro → predicado não funciona → recursão não tem caso base → divergência.
+Sem objetivo claro → predicado não funciona → recursão não tem caso base → divergência (= AutoGPT).
 
 ### Janela de abstração
 
@@ -69,32 +81,51 @@ O objetivo tem um nível ótimo de abstração:
 - **Zona útil** ("app que mostra ciclofaixas em tempo real pra ciclistas urbanos de SP") → rejeita passos irrelevantes, sobrevive a mudanças de implementação.
 - **Muito concreto** ("PWA com Mapbox GL + layer da CET") → plano rígido disfarçado de objetivo. Não sobrevive a mudança de premissa.
 
-A zona útil é onde o objetivo tem **máximo poder de discriminação**. Na teoria da informação: o nível com maior entropia condicional útil.
+A zona útil é onde o objetivo tem **máximo poder de discriminação**. Na teoria da informação: o nível com maior entropia condicional útil. Teste: se toda a stack mudar, o predicado ainda faz sentido?
 
 ### Resiliência a mutação
 
-O sistema é reativo, não contratual. Se o objetivo muda:
-- Não há plano para invalidar
-- O próximo predicado já reflete o objetivo novo
-- Galhos da árvore podem ser podados, backtrack é natural
-- Zero inércia
+O sistema é reativo, não contratual. Se o objetivo raiz muda:
+- Cria-se um novo nó raiz na árvore
+- A árvore anterior persiste como histórico
+- A recursão recomeça do novo raiz
+- Nada se perde, e a profundidade se corrige
 
 Estruturalmente idêntico ao MPC (Model Predictive Control): planeja N passos, commita 1, observa, replanteia.
 
 ---
 
-## Humano na arquitetura
+## Validação humana
 
-O humano é parte da primitiva, não obstáculo. Checkpoints quando:
-- O objetivo pode ter mudado (humano aprendeu algo)
-- Reversibilidade é baixa (decisão consequencial)
-- Certeza é insuficiente (agente não consegue determinar o próximo predicado)
+O humano é parte da primitiva, não obstáculo. Valida em dois momentos:
+- **Proposta:** o agente propõe um predicado, humano confirma que faz sentido e progride na direção correta
+- **Resultado:** o agente conclui que satisfez o predicado, humano confirma que foi de fato satisfeito
+
+Rejeição na proposta → agente propõe outro predicado. Rejeição no resultado → agente refaz a execução. Não são casos especiais — são re-avaliações naturais da primitiva.
+
+Quando o agente reconhece que um predicado é inatingível, ele poda o nó. Isso força re-avaliação no pai e geração de outro caminho.
 
 ---
 
-## Caso base: Ralph Loop
+## Dois modos de execução
 
-Quando o predicado é atômico, a execução é um Ralph Loop: agente executa, verificação externa (testes, build, humano), commit ou revert, repete. Flat, constraint-driven, sem hierarquia.
+O caso base tem dois modos, e o agente decide qual:
+- **Try:** predicados triviais. Implementa, valida, aprova ou descarta.
+- **Ciclo completo:** predicados complexos. Discovery → delivery → review → ship.
+
+O ciclo do Launchpad sobrevive como motor de execução no caso base. Arbol substitui a camada de planejamento/hierarquia (mission/stage/module), mas o ciclo de execução (discovery → delivery → review → ship) é a unidade atômica de trabalho para predicados complexos.
+
+Paralelismo (múltiplos subagentes) é estratégia interna do ciclo — aumenta a capacidade de satisfazer predicados maiores. Do ponto de vista da árvore, continua sendo um nó, um predicado, um resultado.
+
+---
+
+## Persistência
+
+A árvore de predicados é a representação persistente em disco. Cada nó: predicado (condição falsificável), status (pendente | satisfeito | podado), filhos.
+
+Não existe "plano" separado. A árvore é o plano, o log e o estado. Existe sempre um e apenas um nó ativo — o predicado sendo trabalhado. Uma sessão nova lê a árvore, encontra o nó ativo, e continua. É o estado completo da sessão.
+
+Delegação muda o executor do nó, não cria nós paralelos.
 
 ---
 
@@ -104,15 +135,7 @@ Quando o predicado é atômico, a execução é um Ralph Loop: agente executa, v
 - **Sonnet** nos níveis médios: predicados técnicos, implementação com contexto
 - **Haiku** nos níveis baixos: predicados atômicos, execução direta
 
-Critério de delegação: "quem consegue satisfazer este predicado?"
-
----
-
-## Persistência
-
-A árvore de predicados é a representação persistente em disco. Cada nó: predicado (condição falsificável), status (satisfeito/pendente/podado), filhos.
-
-Não existe "plano" separado. A árvore é o plano, o log e o estado. Uma sessão nova lê a árvore, encontra o próximo predicado pendente, e continua.
+Critério de delegação: "quem consegue satisfazer este predicado?" É o único critério.
 
 ---
 
