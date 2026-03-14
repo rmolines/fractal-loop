@@ -76,7 +76,9 @@ Rejeição na proposta → agente propõe outro predicado. Rejeição no resulta
 
 **Predicado atômico:** aquele que um try ou um ciclo (planning → delivery → review → ship) consegue satisfazer diretamente. É o caso base da recursão.
 
-**Nó ativo:** existe sempre um e apenas um predicado sendo trabalhado. Uma sessão nova lê a árvore, encontra o nó ativo, e continua. É o estado completo da sessão.
+**Nó ativo:** existe sempre um e apenas um predicado sendo trabalhado por árvore. Uma sessão nova lê a árvore, encontra o nó ativo, e continua. É o estado completo da sessão.
+
+**Árvore:** um objetivo independente com sua própria raiz e nó ativo. Um repo pode conter múltiplas árvores em `.fractal/`, cada uma operando independentemente. Árvores não se referenciam.
 
 **Podado:** predicado que o agente reconheceu como inatingível. Permanente naquele nó, mas não mata o pai — força re-avaliação e geração de outro caminho.
 
@@ -88,8 +90,8 @@ Não existe plano separado do objetivo. O objetivo raiz é o primeiro predicado.
 ### 2. Reativo, não contratual
 Não existe plano como contrato. Se o objetivo raiz muda, cria-se um novo nó raiz na árvore. A árvore anterior persiste como histórico, mas a recursão recomeça do novo raiz. Nada se perde, e a profundidade se corrige.
 
-### 3. Um nó ativo
-Existe sempre um e apenas um predicado sendo trabalhado. Delegação muda o executor do nó, não cria nós paralelos. Paralelismo é otimização interna do ciclo de execução.
+### 3. Um nó ativo por árvore
+Cada árvore tem exatamente um predicado sendo trabalhado. Um repo pode ter múltiplas árvores independentes. Delegação muda o executor do nó, não cria nós paralelos. Paralelismo é otimização interna do ciclo de execução.
 
 ### 4. Delegação por capacidade
 O predicado determina o executor. Predicados abstratos → modelo mais capaz. Predicados atômicos → modelo mais barato. "Quem consegue satisfazer este predicado?" é o único critério.

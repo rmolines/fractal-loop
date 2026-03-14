@@ -59,8 +59,26 @@ FRACTAL_DIR="${REPO_ROOT:-.}/.fractal"
 ### Route
 
 - **No `.fractal/` dir + no arguments** → ask the user what they want to accomplish
-- **No `.fractal/` dir + arguments** → extract objective from arguments, start extraction flow
-- **`.fractal/` exists** → read tree from filesystem, find active node, run the primitive
+- **No `.fractal/` dir + arguments** → extract objective from arguments, create first tree
+- **`.fractal/` exists with 1 tree** → enter that tree directly
+- **`.fractal/` exists with N trees + no arguments** → list trees with status, ask which one
+- **`.fractal/` exists + argument = existing tree name** → enter that tree
+- **`.fractal/` exists + argument = new objective** → extract objective, create new tree
+
+```bash
+# List existing trees (each top-level dir under .fractal/ with a root.md is a tree)
+TREES=$(find "$FRACTAL_DIR" -maxdepth 2 -name "root.md" -exec dirname {} \; 2>/dev/null)
+```
+
+When listing trees, show:
+```
+Árvores em .fractal/:
+
+  ciclofaixas       → nó ativo: dados-cet/endpoint-geojson (planned)
+  onboarding-flow   → nó ativo: signup-step (not started)
+
+Qual árvore? (ou descreva um novo objetivo)
+```
 
 ---
 
@@ -158,33 +176,39 @@ Default to light inside an existing repo. Deep is the exception.
 
 ## Filesystem structure
 
-The tree IS the filesystem. Each directory is a predicate node. Artifacts from the
-execution cycle live inside the node.
+The tree IS the filesystem. Each top-level directory under `.fractal/` is an independent
+tree. Each subdirectory within a tree is a predicate node. Artifacts from the execution
+cycle live inside the node.
 
 ```
 .fractal/
-  root.md                    # active node pointer + history of root changes
-  dados-ciclofaixas/         # predicate node (child of root)
-    predicate.md             # falsifiable condition, status, created date, notes
-    plan.md                  # from /fractal:planning
-    results.md               # from /fractal:delivery
-    review.md                # from /fractal:review
-    endpoint-geojson/        # nested predicate (grandchild)
+  ciclofaixas/                 # tree 1
+    root.md                    # root predicate + active node pointer
+    dados-cet/                 # predicate node (child of root)
+      predicate.md             # falsifiable condition, status, notes
+      plan.md                  # from /fractal:planning
+      results.md               # from /fractal:delivery
+      review.md                # from /fractal:review
+      endpoint-geojson/        # nested predicate (grandchild)
+        predicate.md
+        plan.md
+        results.md
+        review.md
+    mapa-renderiza/            # predicate node (child of root)
       predicate.md
-      plan.md
-      results.md
-      review.md
-  mapa-renderiza/            # predicate node (child of root)
-    predicate.md
+  onboarding-flow/             # tree 2 (independent)
+    root.md
+    signup-step/
+      predicate.md
 ```
 
-### root.md
+### root.md (inside each tree directory)
 
 ```markdown
 ---
 predicate: "the root falsifiable condition"
 status: pending
-active_node: dados-ciclofaixas/endpoint-geojson
+active_node: dados-cet/endpoint-geojson
 created: 2026-03-14
 ---
 
@@ -252,7 +276,7 @@ Read `~/git/fractal/LAW.md` for the full specification. Here is the operational 
 
 ### 1. Find the active node
 
-Read `.fractal/root.md` → get `active_node` path → read that node's `predicate.md` →
+Read `.fractal/<tree>/root.md` → get `active_node` path → read that node's `predicate.md` →
 list artifacts in the directory to derive execution state.
 
 Present it:
@@ -364,16 +388,18 @@ If the user decides the root objective has changed:
 
 When called with no arguments and `.fractal/` exists:
 
-1. Read `root.md`
-2. Show current state:
+1. List trees. If 1 tree → enter it. If N trees → ask which one.
+2. Read `<tree>/root.md`
+3. Show current state:
    ```
+   Árvore: <tree name>
    Projeto: <root predicate>
    Nó ativo: <active predicate>
    Caminho: <path>
    Profundidade: N
    Predicados satisfeitos: X/Y total
    ```
-3. Run the primitive on the active node
+4. Run the primitive on the active node
 
 ---
 
@@ -384,4 +410,5 @@ When called with no arguments and `.fractal/` exists:
 - **The filesystem is truth.** Always read before acting, always save after acting.
 - **HITL always.** Validate every proposed predicate. Validate every result.
 - **Subagents use model: sonnet.** Never opus in a subagent.
-- **Discovery is the primitive.** Every evaluation of a predicate IS discovery. Don't invoke `/fractal:discovery` separately — this skill replaces it.
+- **Discovery is the primitive.** Every evaluation of a predicate IS discovery.
+- **One active node per tree.** A repo can have multiple independent trees.
