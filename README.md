@@ -53,15 +53,15 @@ $ /fractal
 Session dies, you come back, run `/fractal` with no arguments. It reads the
 filesystem and knows where it left off.
 
-## How is this different from Task Master, BMAD, etc?
+## How is this different?
 
-| | Task-based tools | OpenPredicate |
-|---|---|---|
-| You say | "Do these tasks in this order" | "Here's my goal" |
-| It decides | Nothing. Follows the list | What to work on and in what order |
-| When a path fails | Stale task, manual cleanup | Prunes the branch, tries another way |
-| State | JSON, database, GitHub Issues | Filesystem. `ls` shows the tree |
-| Decomposition | All upfront | One piece at a time, re-evaluate after each |
+Other tools ask you to break your project into tasks upfront. You write a PRD,
+it becomes a list, the agent follows the list. If a task turns out to be wrong,
+you edit the list manually.
+
+OpenPredicate doesn't need a list. You state the goal, it picks the riskiest
+piece, works on it, then reassesses. If a path doesn't work out, it backs up
+and tries another. You never maintain a plan doc.
 
 ## The operation
 
