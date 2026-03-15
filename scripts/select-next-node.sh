@@ -5,7 +5,10 @@ set -euo pipefail
 # Usage: bash scripts/select-next-node.sh [tree-path]
 #   No argument: auto-discovers the single tree in .fractal/
 #
-# Priority: leaf-like pending nodes (no pending children) > deepest first > alphabetical
+# Priority (3-tier):
+#   Tier 1: Undiscovered (no discovery.md) — shallowest first, alphabetical tiebreak
+#   Tier 2: Branch nodes (discovery.md with node_type: branch) — shallowest first, alphabetical tiebreak
+#   Tier 3: Leaf nodes (discovery.md with node_type: leaf) — deepest first, alphabetical tiebreak
 
 if [ $# -lt 1 ]; then
   if [ ! -d ".fractal" ]; then
@@ -69,6 +72,20 @@ select_deepest() {
     local depth="${node_rel//[^\/]/}"
     depth=$(( ${#depth} + 1 ))
     if [ "$depth" -gt "$best_depth" ] || { [ "$depth" -eq "$best_depth" ] && [[ "$node_rel" < "$best" ]]; }; then
+      best_depth="$depth"
+      best="$node_rel"
+    fi
+  done
+  echo "$best"
+}
+
+# Select shallowest node (alphabetical tiebreak) from a list of relative paths
+select_shallowest() {
+  local best="" best_depth=999999
+  for node_rel in "$@"; do
+    local depth="${node_rel//[^\/]/}"
+    depth=$(( ${#depth} + 1 ))
+    if [ "$depth" -lt "$best_depth" ] || { [ "$depth" -eq "$best_depth" ] && { [ -z "$best" ] || [[ "$node_rel" < "$best" ]]; }; }; then
       best_depth="$depth"
       best="$node_rel"
     fi
@@ -163,41 +180,39 @@ if [ "${#PENDING_NODES[@]}" -eq 0 ]; then
   exit 0
 fi
 
-# ── Identify leaf-like pending nodes ─────────────────────────────────────────
+# ── Classify pending nodes into 3 tiers ──────────────────────────────────────
 
-LEAF_PENDING_NODES=()
+TIER1_NODES=()   # Undiscovered: no discovery.md
+TIER2_NODES=()   # Branch: discovery.md with node_type: branch
+TIER3_NODES=()   # Leaf: discovery.md with node_type: leaf
 
 for node_rel in "${PENDING_NODES[@]}"; do
   node_dir="$TREE_PATH/$node_rel"
-  has_pending_child=false
+  discovery_file="$node_dir/discovery.md"
 
-  while IFS= read -r child_pred; do
-    child_rel_dir="${child_pred#$TREE_PATH/}"
-    child_rel_dir="$(dirname "$child_rel_dir")"
-
-    if [ "$child_rel_dir" = "$node_rel" ]; then
-      continue
+  if [ ! -f "$discovery_file" ]; then
+    TIER1_NODES+=("$node_rel")
+  else
+    node_type="$(get_field "$discovery_file" node_type)"
+    if [ "$node_type" = "branch" ]; then
+      TIER2_NODES+=("$node_rel")
+    else
+      # leaf or any other classified node
+      TIER3_NODES+=("$node_rel")
     fi
-
-    if [ "$(get_field "$child_pred" status)" = "pending" ]; then
-      has_pending_child=true
-      break
-    fi
-  done < <(find "$node_dir" -name "predicate.md" -not -path "*/_orphans/*" | sort)
-
-  if [ "$has_pending_child" = false ]; then
-    LEAF_PENDING_NODES+=("$node_rel")
   fi
 done
 
-LEAF_PENDING_COUNT="${#LEAF_PENDING_NODES[@]}"
+LEAF_PENDING_COUNT="${#TIER3_NODES[@]}"
 
-# ── Select deepest leaf-like pending node (alphabetical tiebreak) ─────────────
+# ── Select from highest non-empty tier ────────────────────────────────────────
 
-if [ "$LEAF_PENDING_COUNT" -gt 0 ]; then
-  SELECTED_NODE="$(select_deepest "${LEAF_PENDING_NODES[@]}")"
+if [ "${#TIER1_NODES[@]}" -gt 0 ]; then
+  SELECTED_NODE="$(select_shallowest "${TIER1_NODES[@]}")"
+elif [ "${#TIER2_NODES[@]}" -gt 0 ]; then
+  SELECTED_NODE="$(select_shallowest "${TIER2_NODES[@]}")"
 else
-  SELECTED_NODE="$(select_deepest "${PENDING_NODES[@]}")"
+  SELECTED_NODE="$(select_deepest "${TIER3_NODES[@]}")"
 fi
 
 # ── Read selected predicate text ──────────────────────────────────────────────
