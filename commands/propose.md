@@ -131,7 +131,7 @@ Format each option as:
 Example call:
 ```
 AskUserQuestion(
-  question: "Onde posicionar o predicado '<proposed predicate>'?",
+  question: "📍 <tree> | PROPOSE\n🎯 <proposed predicate text>\n\nOnde posicionar o predicado '<proposed predicate>'?",
   options: [
     { label: "captura-adhoc", description: "o humano pode propor um predicado avulso... | profundidade: 1 | filhos: 2" },
     { label: "Raiz", description: "desenvolvedores que usam Claude Code... | profundidade: 0 | filhos: 24" },
@@ -208,7 +208,7 @@ NODE_REL=$(realpath --relative-to="$TREE_DIR" "$NODE_DIR" 2>/dev/null || \
 
 Use `AskUserQuestion`:
 
-> "Nó criado em <NODE_REL>. Quer redirecionar o foco para ele?"
+> "📍 <tree> | PROPOSE\n🎯 <proposed predicate text>\n\nNó criado em <NODE_REL>. Quer redirecionar o foco para ele?"
 
 Options:
 - "Sim, redirecionar foco"

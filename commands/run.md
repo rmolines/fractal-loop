@@ -109,7 +109,7 @@ Parse the output:
 
 Use `AskUserQuestion`:
 
-> "Próximo foco sugerido: '<selected_predicate>' (<selected_node>). Confirma?"
+> "📍 <breadcrumb> | <state>\n🎯 <active_predicate>\n\nPróximo foco sugerido: '<selected_predicate>' (<selected_node>). Confirma?"
 
 - **Confirmed** → create session lock for the selected node: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <selected_node>`. Then update `active_node` in `root.md` to `selected_node`. Invoke `/fractal:run`. STOP.
 - **Rejected** → show the tree (run `fractal-tree.sh`) and ask the human which node they prefer. Create session lock: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <chosen_node>`. Update `active_node` in `root.md` to the human's chosen path. Invoke `/fractal:run`. STOP.
@@ -156,7 +156,7 @@ Wait for response. Parse: `achievable`, `node_type`, `confidence`, `proposed_chi
 Present to human:
 
 - `achievable: no`:
-  "O predicado parece inatingivel: <reasoning>. Podar este no?"
+  "📍 <breadcrumb> | <state>\n🎯 <active_predicate>\n\nO predicado parece inatingivel: <reasoning>. Podar este no?"
   → Confirmed → go to 4a (PRUNE)
   → Denied → re-evaluate with human's additional context
 
@@ -164,7 +164,7 @@ Present to human:
   Decide execution mode:
   **Patch** if ALL: <=3 files, no architecture decisions, single concern, describable in 2-3 sentences.
   **Sprint** otherwise.
-  "Executar '<prd_seed>' via [patch|sprint]. <reasoning>. Aceita?"
+  "📍 <breadcrumb> | <state>\n🎯 <active_predicate>\n\nExecutar '<prd_seed>' via [patch|sprint]. <reasoning>. Aceita?"
   → Confirmed → go to 4b (EXECUTE)
   → Rejected → ask what human prefers
 
@@ -238,6 +238,9 @@ Not the easiest. Not the most important. The most clarifying.
 **Step 3 — Present to human:**
 
 ```
+📍 <breadcrumb> | <state>
+🎯 <active_predicate>
+
 O predicado "<parent>" precisa de subdivisao.
 
 Candidatos:
@@ -265,7 +268,7 @@ active child, keep agent's as candidates, capture learning in `learnings.md`.
 
 After patch or sprint completes and human has seen the result.
 
-Ask: "O predicado foi satisfeito?"
+Ask: "📍 <breadcrumb> | <state>\n🎯 <active_predicate>\n\nO predicado foi satisfeito?"
 - **Yes** → write `status: satisfied` in active node's `predicate.md`. → go to step 6 (ASCEND).
 - **No** → capture learning in `.fractal/learnings.md`. Invoke `/fractal:run`. STOP.
 
