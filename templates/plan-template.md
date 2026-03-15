@@ -1,15 +1,15 @@
 # Plan: <name>
-_PRD: ~/.claude/initiatives/<repo>/<name>/prd.md_
+_Predicate: .fractal/<node>/predicate.md_
 _Generated on: <date>_
 
 ## Requirements
-_Copied from PRD — the contract this plan must fulfill._
+_Copied from predicate — the contract this plan must fulfill._
 
 - **R1:** <requirement text>
 - **R2:** <requirement text>
 
 ## Problem
-<Problem description — extracted directly from the PRD. One paragraph that describes what
+<Problem description — extracted directly from the predicate. One paragraph that describes what
 is being solved and for whom. Used by the executor to verify alignment during execution.>
 
 ---

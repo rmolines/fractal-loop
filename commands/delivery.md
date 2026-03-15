@@ -38,7 +38,7 @@ If plan.md not found: "No plan.md found. Run /fractal:planning first."
 
 Read in parallel:
 1. `plan.md` — especially `## Execution DAG`
-2. `predicate.md` — the product reference (replaces prd.md/module.md)
+2. `predicate.md` — the falsifiable condition for this node (the product reference)
 3. `.claude/project.md` — build/test commands, hot files
 
 **Critical:** Read project.md in the same parallel batch as plan.md/predicate.md.

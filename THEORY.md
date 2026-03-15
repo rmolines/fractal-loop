@@ -1,4 +1,4 @@
-# Arbol — Recursive Planning Primitive
+# Fractal — Recursive Planning Primitive
 
 ## The Problem
 
@@ -17,20 +17,20 @@ Launchpad (the previous framework) imposed mission → stage → module with a d
 ```
 // entry point
 root_predicate ← extract_goal(human)  // precondition, not part of the primitive
-arbol(root_predicate)
+fractal(root_predicate)
 
-arbol(predicate):
+fractal(predicate):
   if is_unachievable(predicate):
     prune(predicate)
     return pruned
 
   else if try_can_satisfy(predicate):
     try(predicate)
-    human validates → satisfied | arbol(predicate)
+    human validates → satisfied | fractal(predicate)
 
   else if cycle_can_satisfy(predicate):
     cycle(predicate)  // discovery → delivery → review → ship
-    human validates → satisfied | arbol(predicate)
+    human validates → satisfied | fractal(predicate)
 
   else:
     // pick the sub-predicate that, once satisfied, reduces the most uncertainty
@@ -38,8 +38,8 @@ arbol(predicate):
     // important, but the one that best clarifies the path forward
     child ← propose_sub_predicate
     human validates proposal:
-      if accepted → arbol(child), then arbol(predicate)
-      if rejected → arbol(predicate)  // propose another child
+      if accepted → fractal(child), then fractal(predicate)
+      if rejected → fractal(predicate)  // propose another child
 ```
 
 The operation is fractal — self-similar at any scale. Same structure, different time constants.
@@ -66,7 +66,7 @@ Each level of the tree inherits the same type (falsifiable predicate). Satisfyin
 
 ## Goal extraction
 
-Precondition of the primitive, not part of it. Before the first `arbol()` call, the agent invests maximum energy in:
+Precondition of the primitive, not part of it. Before the first `fractal()` call, the agent invests maximum energy in:
 1. Uncovering the real goal behind the request (Socratic extraction)
 2. Anticipating the "reality check" — when the human will discover they wanted something else
 3. Making the goal falsifiable — a concrete condition that proves it was reached
@@ -113,7 +113,7 @@ The base case has two modes, and the agent decides which:
 - **Try:** trivial predicates. Implement, validate, approve or discard.
 - **Full cycle:** complex predicates. Discovery → delivery → review → ship.
 
-The Launchpad cycle survives as the execution engine in the base case. Arbol replaces the planning/hierarchy layer (mission/stage/module), but the execution cycle (discovery → delivery → review → ship) is the atomic unit of work for complex predicates.
+The Launchpad cycle survives as the execution engine in the base case. Fractal replaces the planning/hierarchy layer (mission/stage/module), but the execution cycle (discovery → delivery → review → ship) is the atomic unit of work for complex predicates.
 
 Parallelism (multiple subagents) is an internal strategy of the cycle — it increases the capacity to satisfy larger predicates. From the tree's perspective, it is still one node, one predicate, one result.
 

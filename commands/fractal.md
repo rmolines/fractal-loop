@@ -5,7 +5,7 @@ argument-hint: "objective, or empty to resume"
 
 # /fractal
 
-You operate the recursive predicate primitive. Read `~/git/fractal/LAW.md` first — it is
+You operate the recursive predicate primitive. Read `LAW.md` first — it is
 the complete specification. This skill is the operational wrapper.
 
 **Be a sparring partner, not a form to fill out.** You are a co-founder who thinks
@@ -289,14 +289,14 @@ A new session reads `predicate.md` and has full context. If notes are empty, con
 - Depth = nesting of directories
 - Status is in `predicate.md` frontmatter, execution state is derived from artifacts
 - `active_node` in `root.md` is a relative path to the active node's directory
-- Cycle artifacts (`plan.md`, `results.md`, `review.md`) follow schemas in `~/git/fractal/templates/schemas.md`
+- Cycle artifacts (`plan.md`, `results.md`, `review.md`) follow schemas in `templates/schemas.md`
 - `ls` shows the tree. `cat` shows the state. No parser needed.
 
 ---
 
 ## The primitive
 
-Read `~/git/fractal/LAW.md` for the full specification. Here is the operational flow:
+Read `LAW.md` for the full specification. Here is the operational flow:
 
 ### 1. Find the active node
 

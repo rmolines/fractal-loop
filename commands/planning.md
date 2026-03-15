@@ -281,7 +281,7 @@ Batch 3 (sequential): D5 depends on D3 and D4
 ### Execution DAG (machine-readable)
 
 Include a parseable DAG section that `/fractal:delivery` reads to schedule execution.
-See `~/git/fractal/templates/schemas.md` for the full format.
+See `templates/schemas.md` for the full format.
 
 ```markdown
 ## Execution DAG
@@ -366,7 +366,7 @@ Wait for the user's response:
 After approval, save to the node directory:
 `${NODE_DIR}/plan.md`
 
-Use the template from `~/git/fractal/templates/plan-template.md` as the base structure.
+Use the template from `templates/plan-template.md` as the base structure.
 
 Confirm:
 ```

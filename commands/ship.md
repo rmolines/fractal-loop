@@ -147,7 +147,7 @@ If a feature branch is detected, use it for PR creation. If not, proceed as befo
 ### Plugin version bump
 
 If any files in `commands/` or `.claude-plugin/` were added or modified, bump the
-patch version in `~/git/fractal/.claude-plugin/plugin.json` before committing. New
+patch version in `.claude-plugin/plugin.json` before committing. New
 or modified skills won't appear in Claude Code without a version bump.
 
 ```bash

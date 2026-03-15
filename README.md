@@ -54,10 +54,21 @@ recursion itself.
 
 ```bash
 git clone https://github.com/rmolines/openpredicate ~/git/openpredicate
-echo '{"plugins": [{"path": "~/git/openpredicate"}]}' >> ~/.claude/marketplace.json
 ```
 
-Restart Claude Code. The `/fractal` skills will be available in any repo.
+Add this to `~/.claude/marketplace.json` (create the file if it doesn't exist):
+
+```json
+{
+  "plugins": [{"path": "~/git/openpredicate"}]
+}
+```
+
+If the file already exists, add `{"path": "~/git/openpredicate"}` to the existing `plugins` array.
+
+Start a new Claude Code session (exit and run `claude` again). The `/fractal` skills will be available in any repo.
+
+Commands use the `/fractal` prefix — named after the recursive operation at its core.
 
 ## Skills
 
