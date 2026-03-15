@@ -342,11 +342,37 @@ commit the changes immediately:
 
 Do not push. Push is handled by `/fractal:ship`.
 
-### Manual test checklist
+### Generate test-checklist.md
 
-Generate a list of what needs human validation:
-- What was tested automatically (with evidence)
-- What requires human interaction (UI, end-to-end flows, edge cases not covered)
+After persisting results.md, generate `test-checklist.md` in the node directory using Schema 9 format.
+
+For each deliverable in the Execution DAG that has a `human_test:` field (and it's not "No manual test needed"):
+
+1. Create a test entry (T1, T2, ...) with:
+   - `title:` derived from the deliverable title
+   - `validates:` copied from the `predicate:` field in the DAG
+   - `from:` the deliverable ID (D1, D2, etc.)
+   - `steps:` break down the `human_test:` text into numbered steps
+   - `expected:` extract the expected observation from the human_test text
+   - `result: [ ]` (unchecked — human fills this in)
+   - `notes:` (empty — human fills this in)
+
+2. Add the header:
+   ```
+   # Test Checklist
+   _Node: <node-path>_
+   _Generated: <YYYY-MM-DD>_
+
+   ## How to use
+   1. Run each test below
+   2. Mark [x] for pass, [ ] for fail
+   3. Add notes for any failures
+   4. Run /fractal:review when done
+   ```
+
+3. Save to: `${NODE_DIR}/test-checklist.md`
+
+If no deliverables have human tests: write a test-checklist.md with only the header and a note: "All deliverables validated automatically. No manual tests needed."
 
 ---
 
@@ -371,6 +397,8 @@ errors:
 validation_result:
 ```
 
+Then generate `test-checklist.md` (see "Generate test-checklist.md" section above).
+
 ---
 
 ## Final report
@@ -386,8 +414,7 @@ Deliverables:
 Build: passed
 Tests: X/Y passed
 
-Manual tests needed:
-- [ ] <action> → <expected result>
+Test checklist: <N> manual tests saved to <node-dir>/test-checklist.md
 
 Next step: /fractal:review <path to node directory>
 ```
