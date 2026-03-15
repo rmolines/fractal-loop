@@ -285,6 +285,43 @@ If either fails: **stop**. Report the failure in full. Do not push. Do not creat
 > "Build/tests failed after merge. No PR created. The worktree branch `patch-<slug>` still
 > exists — you can inspect it at `.claude/worktrees/patch-<slug>`."
 
+**Step 2b — Standards auto-update**
+
+Check if the patch introduced new standard-bearing files.
+
+```bash
+STANDARDS_SCRIPT="$REPO_ROOT/scripts/generate-standards.sh"
+CURRENT_BRANCH=$(git -C "$REPO_ROOT" branch --show-current)
+MAIN_BRANCH=$(grep "^main-branch:" "$REPO_ROOT/.claude/project.md" 2>/dev/null | sed 's/^main-branch: //' | head -1)
+MAIN_BRANCH=${MAIN_BRANCH:-main}
+
+# Detect changed files matching standard-bearing patterns
+CHANGED_STANDARDS=$(git -C "$REPO_ROOT" diff "origin/$MAIN_BRANCH...HEAD" --name-only 2>/dev/null | grep -E \
+  '(\.eslintrc|eslint\.config|\.stylelintrc|\.prettierrc|biome\.json|\
+\.github/workflows/|\.github/actions/|Makefile|jest\.config|vitest\.config|\
+pytest\.ini|\.mocharc|\.nvmrc|\.tool-versions|package\.json|pyproject\.toml|\
+husky|lint-staged|commitlint|lefthook|\.editorconfig|tsconfig|jsconfig)' \
+  | head -1)
+
+if [ -n "$CHANGED_STANDARDS" ] && [ -f "$STANDARDS_SCRIPT" ]; then
+  echo "Standards-bearing files detected — regenerating .claude/standards.md"
+  bash "$STANDARDS_SCRIPT"
+  # Commit updated standards.md if it changed
+  if ! git -C "$REPO_ROOT" diff --quiet "$REPO_ROOT/.claude/standards.md" 2>/dev/null; then
+    git -C "$REPO_ROOT" add "$REPO_ROOT/.claude/standards.md"
+    git -C "$REPO_ROOT" commit -m "chore: update standards.md after patch
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+    echo "Standards: updated and committed."
+  else
+    echo "Standards: regenerated, no changes detected."
+  fi
+else
+  # No new patterns or script not found — skip silently
+  true
+fi
+```
+
 **Step 3 — Push to remote**
 
 ```bash

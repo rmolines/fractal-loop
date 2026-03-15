@@ -1,7 +1,7 @@
 ---
 predicate: "desenvolvedores que usam Claude Code encontram o fractal, entendem a proposta em 30 segundos, instalam, e usam no projeto deles"
 status: pending
-active_node: simulacao-novo-usuario
+active_node: test-outsider
 created: 2026-03-14
 ---
 

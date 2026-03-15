@@ -627,6 +627,42 @@ Then generate `test-checklist.md` (see "Generate test-checklist.md" section abov
 
 ---
 
+## Standards auto-update
+
+After persisting results.md and test-checklist.md, check if the delivery introduced new standard-bearing files.
+
+```bash
+STANDARDS_SCRIPT="$REPO_ROOT/scripts/generate-standards.sh"
+
+# Detect changed files matching standard-bearing patterns
+CHANGED_STANDARDS=$(git diff origin/$MAIN_BRANCH...HEAD --name-only 2>/dev/null | grep -E \
+  '(\.eslintrc|eslint\.config|\.stylelintrc|\.prettierrc|biome\.json|\
+\.github/workflows/|\.github/actions/|Makefile|jest\.config|vitest\.config|\
+pytest\.ini|\.mocharc|\.nvmrc|\.tool-versions|package\.json|pyproject\.toml|\
+husky|lint-staged|commitlint|lefthook|\.editorconfig|tsconfig|jsconfig)' \
+  | head -1)
+
+if [ -n "$CHANGED_STANDARDS" ] && [ -f "$STANDARDS_SCRIPT" ]; then
+  echo "Standards-bearing files detected — regenerating .claude/standards.md"
+  bash "$STANDARDS_SCRIPT"
+  # Commit updated standards.md if it changed
+  if ! git diff --quiet "$REPO_ROOT/.claude/standards.md" 2>/dev/null; then
+    git add "$REPO_ROOT/.claude/standards.md"
+    git commit -m "chore: update standards.md after delivery
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+    echo "Standards: updated and committed."
+  else
+    echo "Standards: regenerated, no changes detected."
+  fi
+else
+  # No new patterns or script not found — skip silently
+  true
+fi
+```
+
+---
+
 ## Final report
 
 ```
