@@ -186,11 +186,7 @@ for node_rel in "${PENDING_NODES[@]}"; do
   done < <(find "$node_dir" -name "predicate.md" -not -path "*/_orphans/*" | sort)
 
   if [ "$has_pending_child" = false ]; then
-    if [ "${#LOCKED_BRANCHES[@]}" -gt 0 ] && is_in_locked_branch "$node_rel"; then
-      : # already excluded
-    else
-      LEAF_PENDING_NODES+=("$node_rel")
-    fi
+    LEAF_PENDING_NODES+=("$node_rel")
   fi
 done
 

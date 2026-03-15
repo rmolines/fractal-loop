@@ -1,7 +1,5 @@
 # Filesystem structure
 
-## Filesystem structure
-
 The tree IS the filesystem. Each repo has at most **one tree** under `.fractal/`.
 The tree is a named subdirectory containing `root.md`. Each subdirectory within the
 tree is a predicate node. Artifacts from the execution cycle live inside the node.

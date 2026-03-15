@@ -55,8 +55,7 @@ get_field() {
 
 # ── Helper: check if a PID is alive ──────────────────────────────────────────
 pid_alive() {
-  local pid="$1"
-  kill -0 "$pid" 2>/dev/null && return 0 || return 1
+  kill -0 "$1" 2>/dev/null
 }
 
 # ── Helper: ISO 8601 timestamp ────────────────────────────────────────────────
@@ -140,14 +139,8 @@ EOF
       exit 0
     fi
 
-    EXISTING_PID="$(get_field "$LOCK_FILE" pid)"
-    if [ "$EXISTING_PID" = "$MY_PID" ]; then
-      rm -f "$LOCK_FILE"
-      echo "unlocked: $NODE_REL"
-    else
-      # Different session's lock — exit silently (idempotent)
-      echo "unlocked: $NODE_REL"
-    fi
+    rm -f "$LOCK_FILE"
+    echo "unlocked: $NODE_REL"
     ;;
 
   # ── list ──────────────────────────────────────────────────────────────────
