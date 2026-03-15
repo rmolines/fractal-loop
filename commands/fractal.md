@@ -326,11 +326,15 @@ pruning to the user. If confirmed: set `status: pruned` in `predicate.md`, updat
 `active_node` in `root.md` to parent directory, re-evaluate parent.
 
 **Check 2: Can a try satisfy it?**
-The predicate is trivial enough to implement directly in one shot. Criteria:
-- Clear what needs to be done
-- Few files involved
+The predicate is trivial enough to implement directly in one shot. ALL criteria must be true:
+- Clear what needs to be done — you can describe the implementation in 2-3 sentences
+- Few files involved (≤ 3)
 - No architectural decisions needed
 - No research needed
+- No "and" in the predicate — if it has two independent parts, it's two predicates
+
+**Bias check:** Your default tendency is to say "yes, a try can handle this." Fight it.
+If you hesitate on ANY criterion, the answer is no — move to Check 3 or 4.
 
 If yes → propose to the user: "Este predicado é simples o suficiente pra um try. Concordo?"
 If confirmed → invoke `/fractal:try` with the predicate text as the task description.
@@ -338,10 +342,16 @@ After try completes → ask user to validate the predicate was satisfied.
 
 **Check 3: Can a full cycle satisfy it?**
 The predicate is complex but self-contained — one cycle of planning → delivery → review → ship
-can handle it. Criteria:
-- Scope is clear
-- Can be planned into deliverables
+can handle it. ALL criteria must be true:
+- Scope is clear — you can list all deliverables upfront without "and then we'll see"
+- Can be planned into ≤ 6 deliverables
 - Testable/verifiable result
+- No unvalidated assumptions about strategy, feasibility, or user behavior
+- You wouldn't need to change the plan mid-execution based on what you learn
+
+**Bias check:** If the plan would need 7+ deliverables, or if you'd need to "figure out
+the approach" during delivery, this predicate needs subdivision, not a cycle. Move to
+Check 4.
 
 If yes → propose to the user: "Este predicado precisa de um ciclo completo. Concordo?"
 If confirmed → invoke `/fractal:planning` with the node directory path as argument
