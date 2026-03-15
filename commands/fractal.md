@@ -136,11 +136,16 @@ With the problem defined, map risks that need validation before building:
 
 | Risk type | When relevant | Cheap validation |
 |---|---|---|
+| Strategy / domain | Agent lacks empirical knowledge about what works in this domain | Web research: find 3-5 real cases, extract patterns |
 | Usability / UX | Has a user-facing interface | HTML mockup |
 | Technical | Integration, API, performance | Spike (throwaway code) |
 | Business / market | New product, monetization | Web research + analysis |
 | Distribution | How it reaches users | Channel analysis |
 | Integration | Depends on external service | API test, spike |
+
+**Strategy / domain risk is the most commonly missed.** Before proposing sub-predicates,
+ask: "Do I have empirical knowledge about what actually works here, or am I guessing?"
+If guessing → the first sub-predicate should be a research investigation, not execution.
 
 Present the risks and propose investigation order. Not all predicates need investigation —
 if the predicate is clear and risks are low, skip straight to execution.
@@ -363,6 +368,10 @@ rounds. Consider whether any of them is now the right next child — context may
 changed since they were generated (siblings satisfied, learnings accumulated).
 
 **Step 1 — Generate candidate sub-predicates (3–5):**
+
+Before generating, ask yourself: "Do I have empirical knowledge about what works in
+this domain, or am I guessing?" If guessing, at least one candidate MUST be a strategy
+investigation (research real cases, extract patterns, validate approach).
 
 Think about why the predicate can't be executed directly:
 - Too much scope? → decompose into independent sub-predicates
