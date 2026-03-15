@@ -16,6 +16,7 @@ or discard the sub-predicate. `/fractal:doctor` validates this constraint.
     root.md                    # root predicate + active node pointer
     dados-cet/                 # leaf node (child of root)
       predicate.md             # falsifiable condition, status, notes
+      session.lock             # optional: active session claim (auto-managed)
       discovery.md             # from evaluator: node_type, classification
       prd.md                   # from specify step: acceptance criteria (leaf only)
       plan.md                  # from /fractal:planning
@@ -70,6 +71,25 @@ Context from execution: what was tried, what was learned, why decisions were mad
 selected as the active child. They persist in the hierarchy for future discovery rounds.
 A candidate is NOT human-validated — it's the agent's hypothesis. When the parent is
 re-evaluated, existing candidates are read before proposing new sub-predicates.
+
+### session.lock (inside node directories, auto-managed)
+
+```markdown
+---
+pid: 42567
+session_id: abc123
+created: 2026-03-15T14:30:00
+node: dados-cet
+---
+```
+
+Session locks prevent parallel sessions from working on the same branch.
+Created by `/fractal:run` when a session focuses on a node, removed on ASCEND.
+
+- **Active lock:** PID is alive (`kill -0 $pid` succeeds) → branch is claimed
+- **Stale lock:** PID is dead → ignored by `select-next-node.sh`, cleaned up opportunistically
+- `select-next-node.sh` excludes the locked node, its ancestors, and its descendants from selection
+- Managed by `scripts/session-lock.sh` (create, remove, list, cleanup, check)
 
 ### discovery.md (inside each node directory, written by evaluator)
 
@@ -165,3 +185,4 @@ A new session reads `predicate.md` and has full context. If notes are empty, con
 - Discovery artifact (`discovery.md`) follows Schema 3 in `templates/schemas.md`
 - PRD artifact (`prd.md`) follows Schema 6 in `templates/schemas.md`
 - `ls` shows the tree. `cat` shows the state. No parser needed.
+- `session.lock` files are transient — they should NOT be committed to git

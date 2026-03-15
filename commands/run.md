@@ -99,8 +99,10 @@ Use `AskUserQuestion`:
 
 > "Próximo foco sugerido: '<selected_predicate>' (<selected_node>). Confirma?"
 
-- **Confirmed** → update `active_node` in `root.md` to `selected_node`. Invoke `/fractal:run`. STOP.
-- **Rejected** → show the tree (run `fractal-tree.sh`) and ask the human which node they prefer. Update `active_node` in `root.md` to the human's chosen path. Invoke `/fractal:run`. STOP.
+- **Confirmed** → create session lock for the selected node: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <selected_node>`. Then update `active_node` in `root.md` to `selected_node`. Invoke `/fractal:run`. STOP.
+- **Rejected** → show the tree (run `fractal-tree.sh`) and ask the human which node they prefer. Create session lock: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <chosen_node>`. Update `active_node` in `root.md` to the human's chosen path. Invoke `/fractal:run`. STOP.
+
+Note: `select-next-node.sh` automatically ignores stale locks (dead PIDs). No manual cleanup needed.
 
 ### 2. SHOW
 
@@ -263,7 +265,7 @@ Active node is satisfied or pruned. Bubble up.
 - If `active_status: satisfied` → "Predicado raiz satisfeito. Arvore completa." STOP.
 - If `active_status: pruned` → "Predicado raiz podado. Execute /fractal:init para redefinir." STOP.
 
-6b. Run `select-next-node.sh` to find the next pending node:
+6b. Remove session lock for the current node: `bash "$FRACTAL_SCRIPTS/session-lock.sh" remove <active_node>`. Then run `select-next-node.sh` to find the next pending node:
 
 ```bash
 FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1)
@@ -276,6 +278,8 @@ bash "$FRACTAL_SCRIPTS/select-next-node.sh"
 - If at root level (depth = 1, parent is root) → set `active_node` in `root.md` to `"."`. Print: "Todos os predicados satisfeitos. Arvore completa." STOP.
 
 6d. If a next node was found:
+- Remove session lock for the old node (already done in 6b).
+- Create session lock for the new node: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <selected_node>`.
 - Update `active_node` in `root.md` to `selected_node` directly (no `"."` intermediate).
 - Print: "Nó [satisfied|pruned]. Avançando para '<selected_predicate>'."
 - Invoke `/fractal:run`. STOP.
