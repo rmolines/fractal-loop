@@ -415,6 +415,72 @@ fi
 
 ---
 
+## Post-ship: advance tree
+
+After all phases complete and the predicate is marked satisfied, advance the state machine automatically.
+
+### Step 1 — Read current tree state
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+bash "$REPO_ROOT/scripts/fractal-state.sh"
+```
+
+Parse the output:
+- `active_node` — the node that was just satisfied
+- `parent_path` — relative path of the parent predicate (or `"."` if at top level)
+- `children_total`, `children_satisfied`, `children_pending` — sibling counts under parent
+
+### Step 2 — Check parent readiness
+
+If `parent_path` is `"."`: the satisfied node was a direct child of the root.
+Otherwise: `PARENT_DIR="$TREE_PATH/$parent_path"`.
+
+Count pending siblings:
+
+```bash
+PENDING_SIBLINGS=0
+for CHILD_DIR in "$PARENT_DIR"/*/; do
+  [ -d "$CHILD_DIR" ] || continue
+  CHILD_PRED="$CHILD_DIR/predicate.md"
+  [ -f "$CHILD_PRED" ] || continue
+  CHILD_STATUS=$(awk '/^---/{if(fm==0){fm=1;next}else{exit}} fm==1 && /^status:/{sub(/^status:[[:space:]]*/,"");print;exit}' "$CHILD_PRED")
+  if [ "$CHILD_STATUS" = "pending" ] || [ -z "$CHILD_STATUS" ]; then
+    PENDING_SIBLINGS=$((PENDING_SIBLINGS + 1))
+  fi
+done
+```
+
+### Step 3 — Report and advance
+
+Print a concise status block:
+
+```
+## Tree advance
+
+Node satisfied: <NODE_SLUG>
+Parent: <parent_path or "root">
+Siblings: <children_satisfied> satisfied, <PENDING_SIBLINGS> pending
+```
+
+Then:
+
+- If `PENDING_SIBLINGS > 0`:
+  > "Sibling predicates remain. Invoking /fractal:run to focus the next node."
+  Invoke `/fractal:run`. STOP.
+
+- If `PENDING_SIBLINGS == 0` AND `parent_path != "."`:
+  > "All siblings satisfied. Invoking /fractal:run — parent predicate will be re-evaluated."
+  Invoke `/fractal:run`. STOP.
+
+- If `PENDING_SIBLINGS == 0` AND `parent_path == "."`:
+  > "All root-level children satisfied. Invoking /fractal:run — root predicate will be evaluated for completion."
+  Invoke `/fractal:run`. STOP.
+
+**Rule:** always invoke `/fractal:run` at the end of a successful ship. Never leave the tree in a stale state.
+
+---
+
 ## Phase 6 — Cleanup
 
 ### Worktree

@@ -379,7 +379,55 @@ If `DEPLOY_CMD` is defined: run it.
 If `SMOKE_CMD` is defined: run it.
 If neither is defined: skip silently.
 
-**Step 9 — Report**
+**Step 9 — Post-ship: advance tree**
+
+After the patch is merged and the predicate node is written as satisfied, advance the state machine automatically.
+
+Read current tree state:
+
+```bash
+bash "$REPO_ROOT/scripts/fractal-state.sh"
+```
+
+Parse: `active_node`, `parent_path`, `children_satisfied`, `children_pending`.
+
+Count pending siblings under parent:
+
+```bash
+PARENT_DIR="$TREE_DIR"
+if [ "$ACTIVE_NODE" != "." ] && [ -n "$ACTIVE_NODE" ]; then
+  # Use parent of the newly created patch node
+  PARENT_DIR="$TREE_DIR/$ACTIVE_NODE"
+fi
+PENDING_SIBLINGS=0
+for CHILD_DIR in "$PARENT_DIR"/*/; do
+  [ -d "$CHILD_DIR" ] || continue
+  CHILD_PRED="$CHILD_DIR/predicate.md"
+  [ -f "$CHILD_PRED" ] || continue
+  CHILD_STATUS=$(awk '/^---/{if(fm==0){fm=1;next}else{exit}} fm==1 && /^status:/{sub(/^status:[[:space:]]*/,"");print;exit}' "$CHILD_PRED")
+  if [ "$CHILD_STATUS" = "pending" ] || [ -z "$CHILD_STATUS" ]; then
+    PENDING_SIBLINGS=$((PENDING_SIBLINGS + 1))
+  fi
+done
+```
+
+Print status:
+
+```
+## Tree advance
+
+Patch node: patch-<slug> — satisfied
+Parent: <active_node or "root">
+Siblings: <PENDING_SIBLINGS> pending
+```
+
+Then invoke `/fractal:run` to advance the state machine:
+
+> "Patch shipped and persisted in tree. Invoking /fractal:run for the next predicate."
+
+Invoke `/fractal:run`. STOP.
+
+**Step 10 — Report**
 
 ```
 ## Shipped — patch-<slug>

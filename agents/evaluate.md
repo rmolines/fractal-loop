@@ -42,6 +42,39 @@ If ANY criterion fails → classify as branch.
 - Strategy or feasibility is unvalidated — needs investigation first
 - The predicate describes a composite outcome (multiple user flows, multiple systems)
 
+## Functional vs. technical predicate check
+
+Before classifying a leaf, ask: **can a human confirm this predicate is satisfied without reading source code?**
+
+- If yes → the predicate is functional. Classify as leaf normally.
+- If no → the predicate is technical. It describes internal system state (file mappings, variable counts, implementation details) rather than observable behavior.
+
+When you detect a technical leaf predicate, do NOT classify it as a regular leaf. Instead:
+
+1. Set `node_type: branch`
+2. In `reasoning`, explain: "This predicate is technical — it cannot be validated by a human observing behavior. Wrapping it in a functional parent."
+3. In `proposed_children`, propose:
+   - A **functional parent** predicate: what user behavior, system output, or observable result proves the technical condition is met?
+   - The **original technical predicate** as a child: kept as-is, to be validated by tests or automated checks.
+
+Example transformation:
+
+```
+Input predicate (technical leaf):
+  "system-prompt maps 5 operational files with disambiguation signals"
+
+Output (branch with functional wrapper):
+  proposed_children:
+  - "user asks operational questions and gets correct routing answers"  ← functional, human validates
+  - "system-prompt maps operational files with disambiguation signals"  ← technical, test validates
+```
+
+The functional predicate becomes the new active child. The technical predicate becomes its child, classified as leaf during its own evaluation.
+
+**Exception:** a predicate is allowed to remain a technical leaf if it lives in a pure infrastructure/tooling context with no user-facing behavior. In that case, note the automated validation method in `prd_seed`.
+
+---
+
 ## Output — respond in this exact format, nothing else
 
 ```

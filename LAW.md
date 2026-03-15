@@ -127,6 +127,57 @@ Each repo has at most one predicate tree. Each tree has exactly one predicate be
 ### 4. Delegation by capability
 The predicate determines the executor. Abstract predicates → more capable model. Leaf predicates → cheaper model. "Who can satisfy this predicate?" is the only criterion.
 
+## Predicate formulation
+
+### Functional vs. technical predicates
+
+There are two kinds of predicates at the leaf level:
+
+**Functional predicates** — describe observable behavior from the user's perspective.
+Example: "user asks about fleet distribution and gets a correct, routed answer."
+
+**Technical predicates** — describe internal system properties.
+Example: "system-prompt maps 5 operational files with disambiguation signals."
+
+Functional predicates are preferred at the leaf level because the human validates results. A human can confirm "I asked about fleet distribution and got the right answer" — they cannot easily confirm "the system-prompt maps operational files with disambiguation signals" without reading code.
+
+### The wrapping rule
+
+When a technical predicate surfaces as a leaf, it is almost always a child of an unstated functional predicate. The correct structure is:
+
+```
+[functional parent — human validates]
+  └── [technical child — auto-validated by tests or observable output]
+```
+
+Example:
+
+```
+Bad (technical leaf exposed to human validation):
+  "system-prompt maps operational files"
+
+Good (functional parent, technical child):
+  "user asks operational questions and gets correct routing"   ← human validates
+    └── "system-prompt maps operational files"                ← validated by tests
+```
+
+### When to apply
+
+- If a leaf predicate uses internal identifiers, file counts, or system internals as its success criterion — wrap it.
+- If a human cannot confirm the predicate is satisfied without reading source code — wrap it.
+- If satisfaction requires running a test suite rather than observing user behavior — the predicate is technical; consider whether a functional wrapper belongs above it.
+
+### Exception
+
+A technical predicate may remain a direct leaf when:
+- It belongs to a pure infrastructure or tooling context (no user-facing behavior exists), AND
+- It will be validated automatically by CI/tests, AND
+- The human has explicitly approved this validation method during the SPECIFY step.
+
+Even then, document the validation method in `prd.md`.
+
+---
+
 ## The abstraction window
 
 Every predicate — including the root — must sit in the zone of maximum discriminating power:
