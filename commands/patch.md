@@ -183,12 +183,15 @@ git -C "$REPO_ROOT/.claude/worktrees/patch-<slug>" diff HEAD~1..HEAD
 git -C "$REPO_ROOT" diff main...patch-<slug>
 ```
 
-Then ask:
+Then use `AskUserQuestion` to present the decision:
 
-> "What do you think? You can:
-> - **approve** — merge, push, and create a PR
-> - **adjust [something]** — I'll make the change and show you again
-> - **discard** — clean up and forget it"
+```
+Result ready. What do you want to do?
+
+1. ✅ Approve — merge, push, and create a PR
+2. ✏️  Adjust — describe what to change and I'll update
+3. 🗑️  Discard — clean up and forget it
+```
 
 ---
 
