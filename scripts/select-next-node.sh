@@ -8,12 +8,10 @@ set -euo pipefail
 # Priority: leaf-like pending nodes (no pending children) > deepest first > alphabetical
 
 if [ $# -lt 1 ]; then
-  # Auto-discover single tree in .fractal/
   if [ ! -d ".fractal" ]; then
     echo "error: .fractal directory not found" >&2
     exit 1
   fi
-  # First: check if .fractal/root.md exists → tree root is .fractal itself
   if [ -f ".fractal/root.md" ]; then
     TREE_PATH=".fractal"
   else
@@ -32,9 +30,7 @@ if [ $# -lt 1 ]; then
     fi
   fi
 else
-  TREE_PATH="${1%/}"  # strip trailing slash
-
-  # Resolve: if not a directory, try .fractal/ prefix
+  TREE_PATH="${1%/}"
   if [ ! -d "$TREE_PATH" ]; then
     if [ -d ".fractal/$TREE_PATH" ]; then
       TREE_PATH=".fractal/$TREE_PATH"
@@ -51,12 +47,9 @@ if [ ! -f "$ROOT_MD" ]; then
   exit 1
 fi
 
-# Helper: extract a frontmatter field from a file
-# Usage: get_field <file> <field>
 get_field() {
   local file="$1"
   local field="$2"
-  # Extract value between --- markers, find the field, strip quotes
   awk '
     /^---/ { if (fm==0) { fm=1; next } else { exit } }
     fm==1 && /^'"$field"':/ {
@@ -69,26 +62,33 @@ get_field() {
   ' "$file"
 }
 
+# Select deepest node (alphabetical tiebreak) from a list of relative paths
+select_deepest() {
+  local best="" best_depth=-1
+  for node_rel in "$@"; do
+    local depth="${node_rel//[^\/]/}"
+    depth=$(( ${#depth} + 1 ))
+    if [ "$depth" -gt "$best_depth" ] || { [ "$depth" -eq "$best_depth" ] && [[ "$node_rel" < "$best" ]]; }; then
+      best_depth="$depth"
+      best="$node_rel"
+    fi
+  done
+  echo "$best"
+}
+
 # ── Collect all pending nodes ─────────────────────────────────────────────────
 
-# Arrays to hold relative paths of pending nodes
 PENDING_NODES=()
 
-# Find all predicate.md files, skip _orphans/
 while IFS= read -r pred_file; do
-  # Get relative path from tree root
   rel_dir="${pred_file#$TREE_PATH/}"
   rel_dir="$(dirname "$rel_dir")"
 
-  # Skip _orphans directory
   case "$rel_dir" in
     _orphans|_orphans/*) continue ;;
   esac
 
-  # Skip the root itself (root.md, not predicate.md)
-  # predicate.md files are only in subdirectories
   status="$(get_field "$pred_file" status)"
-
   if [ "$status" = "pending" ]; then
     PENDING_NODES+=("$rel_dir")
   fi
@@ -105,7 +105,6 @@ if [ "$PENDING_COUNT" -eq 0 ]; then
 fi
 
 # ── Identify leaf-like pending nodes ─────────────────────────────────────────
-# A leaf-like pending node has NO pending children
 
 LEAF_PENDING_NODES=()
 
@@ -113,18 +112,15 @@ for node_rel in "${PENDING_NODES[@]}"; do
   node_dir="$TREE_PATH/$node_rel"
   has_pending_child=false
 
-  # Check direct and nested children for any pending predicate.md
   while IFS= read -r child_pred; do
     child_rel_dir="${child_pred#$TREE_PATH/}"
     child_rel_dir="$(dirname "$child_rel_dir")"
 
-    # Must be a child (not the node itself)
     if [ "$child_rel_dir" = "$node_rel" ]; then
       continue
     fi
 
-    child_status="$(get_field "$child_pred" status)"
-    if [ "$child_status" = "pending" ]; then
+    if [ "$(get_field "$child_pred" status)" = "pending" ]; then
       has_pending_child=true
       break
     fi
@@ -139,49 +135,15 @@ LEAF_PENDING_COUNT="${#LEAF_PENDING_NODES[@]}"
 
 # ── Select deepest leaf-like pending node (alphabetical tiebreak) ─────────────
 
-SELECTED_NODE=""
-SELECTED_DEPTH=-1
-
-for node_rel in "${LEAF_PENDING_NODES[@]}"; do
-  # Depth = number of path segments
-  depth="$(echo "$node_rel" | awk -F'/' '{print NF}')"
-
-  if [ "$depth" -gt "$SELECTED_DEPTH" ]; then
-    SELECTED_DEPTH="$depth"
-    SELECTED_NODE="$node_rel"
-  elif [ "$depth" -eq "$SELECTED_DEPTH" ]; then
-    # Alphabetical tiebreak: pick the earlier one
-    if [[ "$node_rel" < "$SELECTED_NODE" ]]; then
-      SELECTED_NODE="$node_rel"
-    fi
-  fi
-done
-
-# If no leaf-like nodes found (shouldn't happen since we have pending nodes),
-# fall back to deepest pending node
-if [ -z "$SELECTED_NODE" ]; then
-  for node_rel in "${PENDING_NODES[@]}"; do
-    depth="$(echo "$node_rel" | awk -F'/' '{print NF}')"
-    if [ "$depth" -gt "$SELECTED_DEPTH" ]; then
-      SELECTED_DEPTH="$depth"
-      SELECTED_NODE="$node_rel"
-    elif [ "$depth" -eq "$SELECTED_DEPTH" ]; then
-      if [[ "$node_rel" < "$SELECTED_NODE" ]]; then
-        SELECTED_NODE="$node_rel"
-      fi
-    fi
-  done
+if [ "$LEAF_PENDING_COUNT" -gt 0 ]; then
+  SELECTED_NODE="$(select_deepest "${LEAF_PENDING_NODES[@]}")"
+else
+  SELECTED_NODE="$(select_deepest "${PENDING_NODES[@]}")"
 fi
 
 # ── Read selected predicate text ──────────────────────────────────────────────
 
-SELECTED_PREDICATE=""
-if [ -n "$SELECTED_NODE" ]; then
-  sel_pred_file="$TREE_PATH/$SELECTED_NODE/predicate.md"
-  if [ -f "$sel_pred_file" ]; then
-    SELECTED_PREDICATE="$(get_field "$sel_pred_file" predicate)"
-  fi
-fi
+SELECTED_PREDICATE="$(get_field "$TREE_PATH/$SELECTED_NODE/predicate.md" predicate)"
 
 # ── Output ────────────────────────────────────────────────────────────────────
 
