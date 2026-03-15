@@ -1,5 +1,11 @@
 # Changelog
 
+## ponteiro-por-sessao — PR #4 — 2026-03-15
+**Type:** feat
+**Node:** ponteiro-por-sessao
+**Commit:** `git show cdff908`
+**What:** `active_node` is now a session-scoped pointer. Between sessions it rests at `"."` (root). On `/fractal` entry, the system traverses the tree via `scripts/select-next-node.sh`, identifies the deepest leaf-like pending node, and presents it to the user for validation. ASCEND resets to `"."` instead of ascending to parent — each session discovers its own focus. LAW.md and filesystem.md updated. Plugin version bumped to 0.5.2.
+
 ## consumo-skills — PR #3 — 2026-03-15
 **Type:** feat
 **Node:** engineering-standards/standards-pra-mim/consumo-skills
