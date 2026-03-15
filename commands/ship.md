@@ -261,7 +261,13 @@ git rebase origin/$MAIN_BRANCH
 git push -u origin ${FEATURE_BRANCH:-$CURRENT_BRANCH}
 ```
 
-Conflicts → list them and ask for guidance. Never `--force` without explicit approval.
+If conflicts are found, use `AskUserQuestion` with the following question text:
+
+"📍 <breadcrumb> | SHIP\n🎯 <active_predicate>\n\nConflitos de rebase encontrados:\n<list of conflicting files>\n\nComo resolver?"
+
+Options: "Resolver automaticamente" / "Pausar para resolver manualmente"
+
+Never `--force` without explicit approval.
 
 ### Create PR
 
@@ -318,12 +324,24 @@ Both paths: delete remote branch after merge.
 ### Deploy
 
 Use `$DEPLOY_CMD` from project.md.
-If not specified: ask the user. **Never declare "in production" without confirming.**
+If not specified, use `AskUserQuestion` with the following question text:
+
+"📍 <breadcrumb> | SHIP\n🎯 <active_predicate>\n\nNenhum comando de deploy configurado. Qual comando usar para deploy?"
+
+(No predefined options — user provides the command as free text.)
+
+Never declare "in production" without confirming.
 
 ### Smoke test
 
 Use `$SMOKE_CMD` from project.md. If `STD_VERIFY` is set in standards.md, it overrides `$SMOKE_CMD` as the post-deploy health check.
-If neither is found: ask. **Never invent a generic smoke test.**
+If neither is found, use `AskUserQuestion` with the following question text:
+
+"📍 <breadcrumb> | SHIP\n🎯 <active_predicate>\n\nNenhum smoke test configurado. Qual comando usar?"
+
+(No predefined options — user provides the command as free text.)
+
+Never invent a generic smoke test.
 If it fails: investigate logs before escalating.
 
 ---
@@ -369,14 +387,18 @@ Launch 4 subagents in parallel:
 
 > Evaluate if something is worth recording — you decide, don't ask.
 > Priority: gaps between predicate and implementation, unexpected technical discoveries.
-> If yes: propose the entry to the user for approval before writing.
+> If yes: use `AskUserQuestion` with the following question text:
+> "📍 <breadcrumb> | SHIP\n🎯 <active_predicate>\n\nProposta de entry para LEARNINGS.md:\n<proposed entry>\n\nAprovar?"
+> Options: "Aprovar entry" / "Ajustar" / "Pular"
 > If no: report "nothing new."
 
 ### Subagent D — CLAUDE.md pitfalls (model: sonnet)
 
 > Evaluate if there was a new pitfall — a non-obvious problem another agent would
 > hit when working on this codebase.
-> If yes: propose the entry to the user for approval before writing.
+> If yes: use `AskUserQuestion` with the following question text:
+> "📍 <breadcrumb> | SHIP\n🎯 <active_predicate>\n\nProposta de pitfall para CLAUDE.md:\n<proposed pitfall>\n\nAprovar?"
+> Options: "Aprovar" / "Ajustar" / "Pular"
 > If no: report "no new pitfalls."
 
 After subagents complete, commit docs (only files that were actually updated):

@@ -169,21 +169,11 @@ If `review.md` exists AND `decision: back-to-delivery`:
    - Deliverables that depend on those (transitively)
 5. Skip all deliverables already marked as passing
 
-Report to the user:
-```
-Amendment mode — review.md found (back-to-delivery)
+Use `AskUserQuestion` with the following question text:
 
-Action items from review:
-- <item 1>
-- <item 2>
+"📍 <breadcrumb> | DELIVERY (amendment)\n🎯 <active_predicate>\n\nAmendment mode. Deliverables para reexecutar: <list>. Prosseguir?"
 
-Deliverables to re-execute: D2, D4
-Skipping (already passing): D1, D3
-
-Proceed?
-```
-
-Wait for confirmation before executing.
+Options: "Prosseguir com reexecução" / "Revisar alterações primeiro"
 
 If `review.md` exists but `decision` is NOT `back-to-delivery`: ignore it — wrong routing.
 If no `review.md`: proceed normally (existing behavior, no changes).
@@ -395,22 +385,13 @@ Gates only trigger at points where the Execution DAG explicitly sets `gate: true
 No implicit gates — not even after Batch 1. If the plan didn't flag a gate, delivery
 continues autonomously.
 
-When a gate triggers:
+When a gate triggers, use `AskUserQuestion` with the following question text:
 
-```
-## Gate — Batch 1 complete
+"📍 <breadcrumb> | DELIVERY\n🎯 <active_predicate>\n\nBatch N completo.\n<progress summary>\n\nPróximo batch: <next deliverables>. Prosseguir?"
 
-Progress:
-- D1 — <title>: success — <one-line summary>
-- D2 — <title>: success — <one-line summary>
+Options: "Prosseguir para próximo batch" / "Ajustar plano"
 
-Next batch: D3, D4 (parallel)
-
-Confirm to proceed, or adjust the plan.
-```
-
-Wait for explicit approval before continuing. If the user requests changes, adapt
-the remaining plan accordingly.
+If the user chooses to adjust, adapt the remaining plan accordingly.
 
 ---
 

@@ -263,8 +263,15 @@ Agent(
 
 ## Make the decision
 
-When the evaluator returns, **you** — the orchestrator — make the call. The evaluator
-recommends; you decide. Consider the evaluator's analysis but apply your own judgment.
+When the evaluator returns, present the verdict and ask the user for a decision using `AskUserQuestion` with the following question text:
+
+"📍 <breadcrumb> | REVIEW\n🎯 <active_predicate>\n\n<evaluator verdict summary>\n\nQual decisão?"
+
+Options: "Aprovado para ship" / "Voltar para delivery" / "Voltar para planning" / "Voltar para discovery"
+
+Note: "Back to fractal" (predicate revision needed) is grouped with "Voltar para discovery" since both require re-evaluation from the start.
+
+Consider the evaluator's analysis and provide context in the verdict summary to help the user decide. The user's choice determines the decision — you execute accordingly.
 
 ### Decision framework
 
