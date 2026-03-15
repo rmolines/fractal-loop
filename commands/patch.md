@@ -102,18 +102,18 @@ Once clarification is done (or skipped), announce:
 
 ## Phase 3 — Implementation (subagent in worktree)
 
-Launch a single subagent with `isolation: "worktree"` and `model: "sonnet"`:
+Launch a single subagent using the `patch-worker` agent definition:
 
 ```
 Agent(
+  subagent_type="patch-worker",
   description="patch: <slug>",
-  model="sonnet",
-  isolation="worktree",
-  branch="patch-<slug>",
-  worktree=".claude/worktrees/patch-<slug>",
   prompt="<implementation prompt below>"
 )
 ```
+
+The `patch-worker` agent (`agents/patch-worker.md`) has `isolation: worktree` and
+`model: sonnet` built in — do NOT pass these again.
 
 ### Implementation prompt
 
@@ -203,11 +203,8 @@ Launch a new subagent in the **same worktree** with the adjustment request:
 
 ```
 Agent(
+  subagent_type="patch-worker",
   description="patch: <slug> — adjustment",
-  model="sonnet",
-  isolation="worktree",
-  branch="patch-<slug>",
-  worktree=".claude/worktrees/patch-<slug>",
   prompt="<adjustment prompt>"
 )
 ```
@@ -393,7 +390,7 @@ If discarded, no orphan is created.
 - **Worktree is always isolated.** No option to implement directly on the current branch.
 - **Complexity check is a suggestion, not a blocker.** User can always override.
 - **Orphan nodes on standalone approve.** When approved outside a tree, persist as orphan node in `.fractal/_orphans/`.
-- **Subagent always uses model: sonnet.** Never opus.
+- **Subagent always uses `patch-worker` agent** (`agents/patch-worker.md`). Never opus.
 - **Build + test is a hard gate on approval.** Stop and report if it fails. Never force a broken PR.
 - **References to other skills use full prefix:** `/fractal`, `/fractal:planning`, `/fractal:delivery`, `/fractal:ship`, etc.
 - **Patch nodes are implicitly leaf nodes.** Discovery is skipped — the predicate is assumed to be sprint-sized by definition. No `discovery.md` or `prd.md` is written.
