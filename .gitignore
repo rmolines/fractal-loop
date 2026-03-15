@@ -1,6 +1,9 @@
 # Fractal tree (each project has its own)
 .fractal/
 
+# Claude Code runtime (worktrees, agents — not source code)
+.claude/
+
 # OS
 .DS_Store
 

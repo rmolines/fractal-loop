@@ -1,5 +1,9 @@
 # Changelog
 
+## recurse-and-evaluate — 2026-03-15
+**Type:** feat
+**What:** Added /fractal:recurse command (recursive state machine that evaluates, executes, or subdivides predicates) with evaluate subagent (finds largest confident sub-predicate and assesses sprint-fitness). New active-predicate.sh helper script. Plugin version bumped to 0.3.1.
+
 ## contexto-cross-node — PR #2 — 2026-03-15
 **Type:** feat
 **Node:** contexto-cross-node
