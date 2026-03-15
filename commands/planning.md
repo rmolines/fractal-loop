@@ -9,7 +9,19 @@ user-invocable: false
 
 ## Human gates
 
-Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
+Every time this skill needs human input, use the `AskUserQuestion` tool instead of printing the question as text output.
+
+Context header (REQUIRED on every question when state is available):
+Prefix the question string with:
+
+📍 <breadcrumb> | <state>
+🎯 <active_predicate (max 80 chars)>
+
+<actual question>
+
+Variables come from the pre-loaded State section. If state is not yet loaded (e.g., early steps of /fractal:propose before tree detection), omit the header.
+
+IMPORTANT: The header must be plain text. No markdown formatting (no **, ##, *, etc.) in the question string. Emojis are fine as visual anchors.
 
 You are an execution architect. Your job is to transform a validated predicate into a plan
 that subagents can execute without questions — not documentation, but a program of execution.
@@ -22,7 +34,7 @@ Input: $ARGUMENTS
 
 The plan is not documentation. It's a program.
 
-Each deliverable must be a **verifiable slice**: the smallest unit of work that
+Each deliverable must be a **falsifiable slice**: the smallest unit of work that
 (a) delivers value, (b) can be independently tested, and (c) contains everything a
 subagent needs to execute it — context, constraints, steps, and acceptance criteria.
 
@@ -162,29 +174,25 @@ or describes something bigger (multiple independent outcomes, several unrelated 
 - You'd need 9+ deliverables to cover everything
 - The predicate is really describing 3+ distinct hypotheses
 
-If the predicate looks too broad:
-```
-Warning: this predicate looks like it covers multiple independent hypotheses.
-A plan with this scope will produce vague, oversized deliverables.
+If the predicate looks too broad, use `AskUserQuestion` with the context header:
 
-Consider going back to /fractal:run to subdivide this node into child nodes:
-  /fractal:run <node-slug>/child-1
-  /fractal:run <node-slug>/child-2
+Question string:
+"📍 <breadcrumb> | PLANNING\n🎯 <active_predicate>\n\nEste predicado parece cobrir múltiplas hipóteses independentes. Continuar com plano maior ou subdividir?\n\nSubdividir: volte para /fractal:run e crie nós filhos para cada hipótese.\nContinuar: o plano será maior e menos preciso."
 
-Continue anyway? (The plan will be larger and less precise.)
-```
+Options: "Sim, continuar com plano maior" / "Voltar para /fractal:run e subdividir"
 
-Let the user decide — they may have good reasons to keep it together.
+The user may have good reasons to keep it together — honor their choice either way.
 
 ### Flag assumptions
 
-If the predicate lacks explicit scope:
-`Warning: predicate without explicit scope — assuming scope is: <interpretation>`
+If there are assumptions to validate (missing scope, missing project config, or inferred values), use `AskUserQuestion` with the context header:
 
-If no project config exists:
-`Warning: no project config — assuming build: <inferred>, test: <inferred>`
+Question string:
+"📍 <breadcrumb> | PLANNING\n🎯 <active_predicate>\n\nAssumptions que precisam de validação:\n<list each assumption on its own line, e.g.:\n- Scope: <interpreted scope>\n- Build: <inferred command>\n- Test: <inferred command>>\n\nEstão corretos?"
 
-Let the user correct before proceeding.
+Options: "Correto, prosseguir" / "Preciso ajustar"
+
+If the user selects "Preciso ajustar", ask which assumption is wrong and what the correct value is, then update your working context before proceeding.
 
 ---
 
@@ -193,9 +201,9 @@ Let the user correct before proceeding.
 This is the hard part. Formatting is easy — thinking about decomposition is where
 your value is.
 
-### The verifiable slice
+### The falsifiable slice
 
-Every deliverable must be a verifiable slice. Ask yourself:
+Every deliverable must be a falsifiable slice. Ask yourself:
 
 - **After this deliverable, can something be tested?** If not, it's too abstract.
   "Set up the data model" is not testable. "Create the User table and verify
@@ -310,6 +318,8 @@ Write it as if explaining to someone who knows the product but not the codebase:
 All deliverables serve the same predicate — the node's falsifiable condition. The predicate line in each deliverable restates which aspect of the predicate this deliverable advances (for clarity, not traceability).
 
 ### Browser validation for UI deliverables
+
+> Se o deliverable envolver alterações de UI/UX no viewer HTML, consulte `references/paper-design-protocol.md` para iterar no design via Paper MCP antes de escrever o prompt do subagente.
 
 When a deliverable produces user-visible UI (web pages, components, screens), the
 **Human test** section should describe steps the user can verify via Chrome browser
@@ -477,10 +487,17 @@ Present the complete plan. It should be readable in one sitting — if it's too 
 condense the subagent prompts (keep structure, reduce verbosity) or merge related
 deliverables.
 
-Wait for the user's response:
-- Approved → save plan.md
-- Requests changes → revise and re-present
-- Asks for clarification → answer and re-present
+After presenting the plan, use `AskUserQuestion` with the context header:
+
+Question string:
+"📍 <breadcrumb> | PLANNING\n🎯 <active_predicate>\n\nPlano completo com <N> deliverables em <M> batches. Aprova?"
+
+Options: "Aprovar plano" / "Ajustar" / "Ver detalhes"
+
+Response handling:
+- "Aprovar plano" → save plan.md
+- "Ajustar" → ask what should change, revise, and re-present (use AskUserQuestion again)
+- "Ver detalhes" → present the full subagent prompts, then re-ask for approval
 
 ---
 

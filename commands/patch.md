@@ -8,7 +8,19 @@ allowed-tools: AskUserQuestion
 
 ## Human gates
 
-Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
+Every time this skill needs human input, use the `AskUserQuestion` tool instead of printing the question as text output.
+
+Context header (REQUIRED on every question when state is available):
+Prefix the question string with:
+
+📍 <breadcrumb> | <state>
+🎯 <active_predicate (max 80 chars)>
+
+<actual question>
+
+Variables come from the pre-loaded State section. If state is not yet loaded (e.g., early steps of /fractal:propose before tree detection), omit the header.
+
+IMPORTANT: The header must be plain text. No markdown formatting (no **, ##, *, etc.) in the question string. Emojis are fine as visual anchors.
 
 You are a fast-iteration agent. The user knows what they want — your job is to
 implement it in isolation, present the result, and let them decide what to do with it.
@@ -87,13 +99,14 @@ Signs it is **too complex**:
 - Has ambiguous product or UX decisions that could go multiple directions
 - Needs research or spikes to determine feasibility
 
-If too complex, say:
+If too complex, use `AskUserQuestion` with the context header:
 
-> "I think this might be too complex for a quick patch — it involves [reason]. Want me
-> to continue with `/fractal:patch`, or would `/fractal:run` be a better starting
-> point?"
+Question string:
+"📍 <breadcrumb> | PATCH\n🎯 <active_predicate>\n\nEste patch pode ser complexo demais: <reason>. Continuar com patch ou usar /fractal:run para um ciclo completo?"
 
-This is a suggestion, not a blocker. If the user says "continue" or "just do it" — proceed.
+Options: "Continuar com patch" / "Mudar para /fractal:run"
+
+This is a suggestion, not a blocker. If the user selects "Continuar com patch" — proceed. If "Mudar para /fractal:run" — stop and instruct the user to run /fractal:run.
 
 ---
 
@@ -102,8 +115,14 @@ This is a suggestion, not a blocker. If the user says "continue" or "just do it"
 Default: **zero questions**. Start implementing.
 
 Only ask if there is genuine ambiguity that would lead to significant rework — two
-equally valid interpretations that produce different results. Before each question,
-state what you are trying to decide and why.
+equally valid interpretations that produce different results.
+
+When clarification is needed, use `AskUserQuestion` with the context header:
+
+Question string:
+"📍 <breadcrumb> | PATCH\n🎯 <active_predicate>\n\n<state what you are trying to decide and why>\n\n<the clarification question>"
+
+Options: provide 2-3 concrete options that resolve the ambiguity, or a free-text option.
 
 Maximum 2 questions total. Never stack them.
 
@@ -114,6 +133,8 @@ Once clarification is done (or skipped), announce:
 ---
 
 ## Phase 3 — Implementation (subagent in worktree)
+
+> Se o deliverable envolver alterações de UI/UX no viewer HTML, siga o protocolo de design Paper MCP em `references/paper-design-protocol.md` para iterar no design antes de implementar.
 
 Launch a single subagent using the `patch-worker` agent definition:
 
@@ -196,12 +217,12 @@ git -C "$REPO_ROOT/.claude/worktrees/patch-<slug>" diff HEAD~1..HEAD
 git -C "$REPO_ROOT" diff main...patch-<slug>
 ```
 
-Then ask:
+Then use `AskUserQuestion` with the context header:
 
-> "What do you think? You can:
-> - **approve** — merge, push, and create a PR
-> - **adjust [something]** — I'll make the change and show you again
-> - **discard** — clean up and forget it"
+Question string:
+"📍 <breadcrumb> | PATCH\n🎯 <active_predicate>\n\nPatch implementado. <summary do que foi feito: arquivos alterados, build/tests>. O que acha?"
+
+Options: "Aprovar" / "Ajustar" / "Descartar"
 
 ---
 

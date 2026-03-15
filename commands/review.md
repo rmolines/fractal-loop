@@ -9,7 +9,19 @@ user-invocable: false
 
 ## Human gates
 
-Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
+Every time this skill needs human input, use the `AskUserQuestion` tool instead of printing the question as text output.
+
+Context header (REQUIRED on every question when state is available):
+Prefix the question string with:
+
+📍 <breadcrumb> | <state>
+🎯 <active_predicate (max 80 chars)>
+
+<actual question>
+
+Variables come from the pre-loaded State section. If state is not yet loaded (e.g., early steps of /fractal:propose before tree detection), omit the header.
+
+IMPORTANT: The header must be plain text. No markdown formatting (no **, ##, *, etc.) in the question string. Emojis are fine as visual anchors.
 
 You are the PM who holds the line on scope. Your job is to decide whether the
 implementation matches what was agreed in the predicate — not to polish code, not to
@@ -251,8 +263,15 @@ Agent(
 
 ## Make the decision
 
-When the evaluator returns, **you** — the orchestrator — make the call. The evaluator
-recommends; you decide. Consider the evaluator's analysis but apply your own judgment.
+When the evaluator returns, present the verdict and ask the user for a decision using `AskUserQuestion` with the following question text:
+
+"📍 <breadcrumb> | REVIEW\n🎯 <active_predicate>\n\n<evaluator verdict summary>\n\nQual decisão?"
+
+Options: "Aprovado para ship" / "Voltar para delivery" / "Voltar para planning" / "Voltar para discovery"
+
+Note: "Back to fractal" (predicate revision needed) is grouped with "Voltar para discovery" since both require re-evaluation from the start.
+
+Consider the evaluator's analysis and provide context in the verdict summary to help the user decide. The user's choice determines the decision — you execute accordingly.
 
 ### Decision framework
 

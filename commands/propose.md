@@ -8,7 +8,19 @@ allowed-tools: AskUserQuestion, Bash, Read, Write, Edit, Glob
 
 ## Human gates
 
-Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
+Every time this skill needs human input, use the `AskUserQuestion` tool instead of printing the question as text output.
+
+Context header (REQUIRED on every question when state is available):
+Prefix the question string with:
+
+📍 <breadcrumb> | <state>
+🎯 <active_predicate (max 80 chars)>
+
+<actual question>
+
+Variables come from the pre-loaded State section. If state is not yet loaded (e.g., early steps of /fractal:propose before tree detection), omit the header.
+
+IMPORTANT: The header must be plain text. No markdown formatting (no **, ##, *, etc.) in the question string. Emojis are fine as visual anchors.
 
 Input: $ARGUMENTS — predicate text in natural language, or empty to be prompted.
 
@@ -37,7 +49,7 @@ Check for these failure modes and push back if found:
 
 **Too abstract (no concrete condition):**
 Examples: "o sistema é bom", "a UX está melhor", "o código está limpo"
-Push back: "Esse predicado é vago demais. Um predicado precisa ser falsificável — algo que pode ser confirmado como verdadeiro ou falso. Tente reformular com uma condição concreta: o que exatamente pode ser observado ou medido?"
+Push back: "Esse predicado é vago demais. Um predicado precisa ser verificável — algo que pode ser confirmado como verdadeiro ou falso. Tente reformular com uma condição concreta: o que exatamente pode ser observado ou medido?"
 Use `AskUserQuestion` to ask for a reformulation.
 
 **Compound predicate (multiple unrelated concerns joined by "and"/"e"):**
@@ -119,7 +131,7 @@ Format each option as:
 Example call:
 ```
 AskUserQuestion(
-  question: "Onde posicionar o predicado '<proposed predicate>'?",
+  question: "📍 <tree> | PROPOSE\n🎯 <proposed predicate text>\n\nOnde posicionar o predicado '<proposed predicate>'?",
   options: [
     { label: "captura-adhoc", description: "o humano pode propor um predicado avulso... | profundidade: 1 | filhos: 2" },
     { label: "Raiz", description: "desenvolvedores que usam Claude Code... | profundidade: 0 | filhos: 24" },
@@ -196,7 +208,7 @@ NODE_REL=$(realpath --relative-to="$TREE_DIR" "$NODE_DIR" 2>/dev/null || \
 
 Use `AskUserQuestion`:
 
-> "Nó criado em <NODE_REL>. Quer redirecionar o foco para ele?"
+> "📍 <tree> | PROPOSE\n🎯 <proposed predicate text>\n\nNó criado em <NODE_REL>. Quer redirecionar o foco para ele?"
 
 Options:
 - "Sim, redirecionar foco"
