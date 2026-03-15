@@ -89,10 +89,8 @@ Then route:
 
 - `state: error` → STOP. Print "Nenhuma arvore encontrada. Execute /fractal:init."
 - `active_status: satisfied` AND `depth: 0` → Print "Predicado raiz satisfeito." STOP.
-- `active_status: satisfied` OR `active_status: pruned` → go to step 6 (ASCEND).
 - `active_node: "."` AND `root_status` is NOT `satisfied` AND NOT `pruned` → **Session traversal** (see below).
-- `active_node` is NOT `"."` → **check ownership** before proceeding (see below).
-- Otherwise → go to step 2 (SHOW).
+- `active_node` is NOT `"."` → **check ownership first** (see below). This MUST happen before any other routing (including ASCEND for satisfied/pruned nodes).
 
 #### Ownership check (active_node is not ".")
 
@@ -106,8 +104,13 @@ bash "$FRACTAL_SCRIPTS/session-lock.sh" check <active_node>
 Parse the output:
 
 - `locked: true` AND `pid` ≠ `$PPID` → the node belongs to another live session. **Treat as session traversal** (go to "Session traversal" below).
-- `locked: true` AND `pid` = `$PPID` → this session owns it. → go to step 2 (SHOW).
-- `locked: false` → no lock exists. Claim it: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <active_node>`. → go to step 2 (SHOW).
+- `locked: true` AND `pid` = `$PPID` → this session owns it. Continue routing below.
+- `locked: false` → no lock exists. Claim it: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <active_node>`. Continue routing below.
+
+After ownership is confirmed, route:
+
+- `active_status: satisfied` OR `active_status: pruned` → go to step 6 (ASCEND).
+- Otherwise → go to step 2 (SHOW).
 
 #### Session traversal (active_node is ".")
 
