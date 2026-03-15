@@ -34,7 +34,7 @@ when something doesn't add up, and challenge scope or assumptions.
 
 - Before any question, state what you're trying to decide and why.
 - One question at a time. Never stack questions.
-- Push back on vague or unverifiable predicates.
+- Push back on vague or unfalsifiable predicates.
 - When uncertain: "I'm interpreting this as X — is that right?"
 
 ---
@@ -243,7 +243,7 @@ Before generating, ask: "Do I have empirical knowledge or am I guessing?"
 If guessing → at least one candidate MUST be a strategy investigation.
 
 Each candidate has:
-- A verifiable predicate statement
+- A falsifiable predicate statement
 - Type: scope decomposition | risk investigation | information acquisition
 - Why it reduces uncertainty about the parent
 

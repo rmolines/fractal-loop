@@ -77,7 +77,7 @@ fi
 ```
 
 Read in parallel:
-- `predicate.md` — the verifiable condition
+- `predicate.md` — the falsifiable condition
 - `prd.md` — acceptance criteria (leaf nodes only; primary validation target when present)
 - `plan.md` — deliverable list, acceptance criteria
 - `git diff origin/main...HEAD` — committed changes
@@ -115,7 +115,7 @@ Agent(
 ### Evaluator prompt
 
 > You are a product reviewer. Your job is to evaluate whether an implementation
-> satisfies a verifiable predicate. You are read-only — do not modify any files.
+> satisfies a falsifiable predicate. You are read-only — do not modify any files.
 > Do NOT use any tools — all context is provided below. Analyze the predicate, plan,
 > and diff inline and return your evaluation directly.
 >
@@ -180,7 +180,7 @@ Agent(
 > - OUT_OF_SCOPE_VIOLATION — implements something explicitly excluded
 >
 > **2. Predicate evaluation**
-> Evaluate the single predicate (the verifiable condition from predicate.md):
+> Evaluate the single predicate (the falsifiable condition from predicate.md):
 > - PASS — evidence in the diff that the predicate is satisfied
 > - PARTIAL — some evidence but incomplete
 > - FAIL — no evidence or contradicting evidence

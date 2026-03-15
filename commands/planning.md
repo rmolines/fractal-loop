@@ -34,7 +34,7 @@ Input: $ARGUMENTS
 
 The plan is not documentation. It's a program.
 
-Each deliverable must be a **verifiable slice**: the smallest unit of work that
+Each deliverable must be a **falsifiable slice**: the smallest unit of work that
 (a) delivers value, (b) can be independently tested, and (c) contains everything a
 subagent needs to execute it — context, constraints, steps, and acceptance criteria.
 
@@ -57,7 +57,7 @@ If $ARGUMENTS is empty: read `.fractal/root.md` → get `active_node` → use th
 If predicate.md not found: stop with "No predicate found. Run /fractal:run first."
 
 Read in parallel:
-1. `predicate.md` — the verifiable condition. This IS the requirement.
+1. `predicate.md` — the falsifiable condition. This IS the requirement.
 2. `.claude/project.md` — build, test, hot files, stack.
 
 ### Load standards
@@ -165,7 +165,7 @@ If no `review.md`: proceed normally (existing behavior).
 
 ### Check predicate scope
 
-After reading the predicate, assess whether it's scoped to a single verifiable condition
+After reading the predicate, assess whether it's scoped to a single falsifiable condition
 or describes something bigger (multiple independent outcomes, several unrelated flows, etc.).
 
 **Signs the predicate is too broad:**
@@ -201,9 +201,9 @@ If the user selects "Preciso ajustar", ask which assumption is wrong and what th
 This is the hard part. Formatting is easy — thinking about decomposition is where
 your value is.
 
-### The verifiable slice
+### The falsifiable slice
 
-Every deliverable must be a verifiable slice. Ask yourself:
+Every deliverable must be a falsifiable slice. Ask yourself:
 
 - **After this deliverable, can something be tested?** If not, it's too abstract.
   "Set up the data model" is not testable. "Create the User table and verify
@@ -269,7 +269,7 @@ Each deliverable follows this structure:
 **Executor:** sonnet | haiku
 **Isolation:** worktree | none
 **Depends on:** none | D<X> | D<X>, D<Y>
-**Predicate:** <the verifiable condition this deliverable advances>
+**Predicate:** <the falsifiable condition this deliverable advances>
 **Files touched:**
 - `path/to/file1`
 - `path/to/file2`
@@ -315,9 +315,11 @@ Write it as if explaining to someone who knows the product but not the codebase:
 - Focus on the observable outcome, not the implementation
 - If the deliverable has no user-facing component, write "No manual test needed — covered by automated validation"
 
-All deliverables serve the same predicate — the node's verifiable condition. The predicate line in each deliverable restates which aspect of the predicate this deliverable advances (for clarity, not traceability).
+All deliverables serve the same predicate — the node's falsifiable condition. The predicate line in each deliverable restates which aspect of the predicate this deliverable advances (for clarity, not traceability).
 
 ### Browser validation for UI deliverables
+
+> Se o deliverable envolver alterações de UI/UX no viewer HTML, consulte `references/paper-design-protocol.md` para iterar no design via Paper MCP antes de escrever o prompt do subagente.
 
 When a deliverable produces user-visible UI (web pages, components, screens), the
 **Human test** section should describe steps the user can verify via Chrome browser
@@ -367,7 +369,7 @@ verified_by: D<N> acceptance | human_test T<N>
 ```
 
 Rules:
-- Every FR must be verifiable — you can unambiguously say "yes this works" or "no it doesn't"
+- Every FR must be falsifiable — you can unambiguously say "yes this works" or "no it doesn't"
 - Every FR must map to at least one deliverable's acceptance or human_test
 - Every critical aspect of the predicate must be covered by at least one FR
 - FRs that require human observation (UX, visual, flow) → `verified_by: human_test`
@@ -536,6 +538,6 @@ Recommend /clear before continuing.
 ## When NOT to use
 
 - No predicate exists → run `/fractal:run` first
-- Predicate is a draft (not verifiable) → refine with `/fractal:run` first
+- Predicate is a draft (not falsifiable) → refine with `/fractal:run` first
 - Plan already exists and is approved → run `/fractal:delivery`
 - Trivial change that doesn't need a plan → go straight to code

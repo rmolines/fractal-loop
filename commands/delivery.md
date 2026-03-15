@@ -57,7 +57,7 @@ If plan.md not found: "No plan.md found. Run /fractal:planning first."
 
 Read in parallel:
 1. `plan.md` — especially `## Execution DAG`
-2. `predicate.md` — the verifiable condition for this node (the product reference)
+2. `predicate.md` — the falsifiable condition for this node (the product reference)
 3. `prd.md` — acceptance criteria (leaf nodes only; provides concrete validation targets)
 4. `.claude/project.md` — build/test commands, hot files
 

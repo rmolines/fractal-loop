@@ -38,9 +38,9 @@ If `$ARGUMENTS` is provided, use it directly as the predicate text.
 
 ---
 
-## Step 2: Validate predicate (verifiability check)
+## Step 2: Validate predicate (falsifiability check)
 
-Evaluate the predicate text for verifiability. A valid predicate must:
+Evaluate the predicate text for falsifiability. A valid predicate must:
 - Describe a concrete, observable condition
 - Be confirmable as true or false by a human
 - Refer to a single concern (not multiple unrelated things joined by "and")
