@@ -134,6 +134,8 @@ Once clarification is done (or skipped), announce:
 
 ## Phase 3 — Implementation (subagent in worktree)
 
+> Se o deliverable envolver alterações de UI/UX no viewer HTML, siga o protocolo de design Paper MCP em `references/paper-design-protocol.md` para iterar no design antes de implementar.
+
 Launch a single subagent using the `patch-worker` agent definition:
 
 ```
