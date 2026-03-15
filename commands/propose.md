@@ -38,33 +38,55 @@ If `$ARGUMENTS` is provided, use it directly as the predicate text.
 
 ---
 
-## Step 2: Validate predicate (falsifiability check)
+## Step 2: Reframe predicate
 
-Evaluate the predicate text for falsifiability. A valid predicate must:
-- Describe a concrete, observable condition
-- Be confirmable as true or false by a human
-- Refer to a single concern (not multiple unrelated things joined by "and")
+Assess the predicate text and determine whether it already is a well-formed predicate or needs reframing.
 
-Check for these failure modes and push back if found:
+**A well-formed predicate** meets all of the following:
+- Describes a concrete, observable condition (not an action or a vague quality)
+- Can be confirmed as true or false by a human
+- Refers to a single concern
 
-**Too abstract (no concrete condition):**
-Examples: "o sistema é bom", "a UX está melhor", "o código está limpo"
-Push back: "Esse predicado é vago demais. Um predicado precisa ser verificável — algo que pode ser confirmado como verdadeiro ou falso. Tente reformular com uma condição concreta: o que exatamente pode ser observado ou medido?"
-Use `AskUserQuestion` to ask for a reformulation.
+**If the predicate is already well-formed**, skip reframing and proceed directly to Step 3.
 
-**Compound predicate (multiple unrelated concerns joined by "and"/"e"):**
-Examples: "o login funciona e o dashboard carrega rápido e o usuário recebe emails"
-Push back: "Esse predicado cobre múltiplas preocupações independentes. Prefiro trabalhar com um por vez — qual é o mais importante agora? Ou posso criar predicados separados para cada."
-Use `AskUserQuestion` to select one concern or confirm splitting.
+**Otherwise**, attempt to reframe it. Apply the appropriate transformation:
 
-**Task framing (describes action, not condition):**
-Examples: "implementar autenticação", "refatorar o módulo X", "adicionar testes"
-Push back: "Isso soa como uma tarefa, não uma condição. Predicados descrevem um estado do mundo — o que será verdadeiro quando essa tarefa for concluída?"
-Use `AskUserQuestion` to ask for rephrasing as a condition.
+**Task framing → condition:**
+Input: "implementar autenticação", "refatorar o módulo X", "adicionar testes"
+Transform to the state that will be true when the task is done.
+Example: "implementar autenticação" → "a autenticação está implementada e um usuário consegue fazer login com email e senha em produção"
 
-After each pushback, wait for the human to reformulate. If the reformulated predicate still fails, push back again — maximum 2 rounds. After 2 rounds, accept the predicate and note the concern.
+**Vague/abstract → concrete observable:**
+Input: "o sistema é bom", "a UX está melhor", "o código está limpo"
+Identify the most likely intent and translate into a specific, measurable condition.
+Example: "a UX está melhor" → "o fluxo de onboarding é concluído em menos de 3 cliques sem mensagens de erro"
 
-Once the predicate passes (or after 2 rounds), proceed to step 3.
+**Compound statement → single concern:**
+Input: "o login funciona e o dashboard carrega rápido e o usuário recebe emails"
+Split into individual candidates and ask the human which one to proceed with.
+Example output: list each concern as a separate option.
+
+After producing the reframe (or list of candidates for compound input), present it using `AskUserQuestion`:
+
+For single reframes:
+> "Reformulei seu input como um predicado verificável:\n\n'<reframed predicate>'\n\nEssa formulação captura sua intenção?"
+
+Options:
+- "Sim, usar essa formulação"
+- "Não, quero ajustar"
+
+For compound splits:
+> "Seu input cobre múltiplas preocupações. Com qual predicado você quer prosseguir agora?"
+
+Options: one per identified concern (max 4), each as a reframed predicate candidate.
+
+**If the human approves**: use the reframed predicate as the predicate text and proceed to Step 3.
+
+**If the human rejects** (max 2 rounds):
+- Round 1: ask "O que está errado? Me dê mais contexto e vou tentar de novo." via `AskUserQuestion`. Incorporate the feedback and produce a new reframe. Present it for approval again.
+- Round 2: if still rejected, ask for the human to provide their own formulation directly via `AskUserQuestion`: "Qual seria a formulação correta para você?" Use that response as the predicate text and proceed to Step 3.
+
+Once the predicate text is confirmed (either original if already well-formed, approved reframe, or human-supplied on round 2), proceed to Step 3.
 
 ---
 
