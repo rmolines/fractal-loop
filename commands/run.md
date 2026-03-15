@@ -49,7 +49,7 @@ PRUNE → persist status:pruned → ASCEND
 EXECUTE → persist execution.md → [patch | sprint] → STOP
 SUBDIVIDE → persist candidates + child → update pointer → self-invoke → STOP
 VALIDATE → [satisfied: persist status:satisfied → ASCEND | not: self-invoke → STOP]
-ASCEND → [depth=0: COMPLETE → STOP | else: update pointer → self-invoke → STOP]
+ASCEND → [depth=0: COMPLETE → STOP | next_pending: advance pointer → self-invoke → STOP | no_pending: check parent → self-invoke → STOP]
 ```
 
 Every transition persists to disk BEFORE acting. This guarantees idempotency:
@@ -83,7 +83,7 @@ Then route:
 
 #### Session traversal (active_node is ".")
 
-This happens at the start of every new session (or after ASCEND resets the pointer). Find the best pending node and confirm with the human before focusing.
+This happens at the start of a fresh session. Find the best pending node and confirm with the human before focusing.
 
 ```bash
 FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1)
@@ -263,9 +263,22 @@ Active node is satisfied or pruned. Bubble up.
 - If `active_status: satisfied` → "Predicado raiz satisfeito. Arvore completa." STOP.
 - If `active_status: pruned` → "Predicado raiz podado. Execute /fractal:init para redefinir." STOP.
 
-6b. Reset `active_node` in `root.md` to `"."`.
+6b. Run `select-next-node.sh` to find the next pending node:
 
-6c. Print: "Nó [satisfied|pruned]. Ponteiro resetado — próximo /fractal:run vai sugerir o foco." STOP.
+```bash
+FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1)
+bash "$FRACTAL_SCRIPTS/select-next-node.sh"
+```
+
+6c. If `selected_node: none`:
+- Determine the parent path of the current `active_node` (strip last path segment).
+- If parent exists (depth > 1) → set `active_node` in `root.md` to the parent path. Print: "Nó [satisfied|pruned]. Sem pendentes — subindo para o pai '<parent_predicate>'." Invoke `/fractal:run`. STOP.
+- If at root level (depth = 1, parent is root) → set `active_node` in `root.md` to `"."`. Print: "Todos os predicados satisfeitos. Arvore completa." STOP.
+
+6d. If a next node was found:
+- Update `active_node` in `root.md` to `selected_node` directly (no `"."` intermediate).
+- Print: "Nó [satisfied|pruned]. Avançando para '<selected_predicate>'."
+- Invoke `/fractal:run`. STOP.
 
 ---
 
