@@ -10,11 +10,11 @@ Tree: $ARGUMENTS
 
 ## State (pre-loaded)
 
-!`bash scripts/fractal-state.sh $0 2>/dev/null || echo "state: error"`
+!`FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1); [ -n "$FRACTAL_SCRIPTS" ] && bash "$FRACTAL_SCRIPTS/fractal-state.sh" $ARGUMENTS 2>/dev/null || echo "state: error"`
 
 ## Predicate (pre-loaded)
 
-!`bash scripts/active-predicate.sh $0 2>/dev/null || echo "predicate: error"`
+!`FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1); [ -n "$FRACTAL_SCRIPTS" ] && bash "$FRACTAL_SCRIPTS/active-predicate.sh" $ARGUMENTS 2>/dev/null || echo "predicate: error"`
 
 ---
 
@@ -42,8 +42,8 @@ Spawn agent:
 ```
 Agent(
   description: "evaluate: <predicate slug>",
-  agent: "evaluate",
-  prompt: "predicate: <active_predicate>\ntree_path: $0\nrepo_root: <git root>"
+  subagent_type: "fractal:evaluate",
+  prompt: "predicate: <active_predicate>\ntree_path: $ARGUMENTS\nrepo_root: <git root>"
 )
 ```
 
@@ -79,7 +79,7 @@ The sub-predicate fits in one sprint. Persist execution context, then run.
 1. If `same_as_input: no` — sub-predicate differs from active node:
    - Create child: `mkdir -p <node-dir>/<slug>`
    - Write `<slug>/predicate.md` with `status: pending`
-   - Update `active_node` in `$0/root.md`
+   - Update `active_node` in `$ARGUMENTS/root.md`
 
 2. Write `execution.md` in the active node dir:
 
@@ -96,7 +96,7 @@ created: <YYYY-MM-DD>
    - **Try** if: ≤3 files, no architecture decisions, single concern, describable in 2-3 sentences.
      → Invoke `/fractal:try <sub_predicate text>`. STOP.
    - **Sprint** otherwise:
-     → Invoke `/fractal:planning $0`. STOP.
+     → Invoke `/fractal:planning $ARGUMENTS`. STOP.
 
 After execution completes → go to step 5 (VALIDATE).
 
@@ -117,9 +117,9 @@ parent_reasoning: "<evaluator reasoning>"
 ---
 ```
 
-3. Update `active_node` in `$0/root.md` to new child path.
+3. Update `active_node` in `$ARGUMENTS/root.md` to new child path.
 
-4. Invoke `/fractal:recurse $0`. STOP.
+4. Invoke `/fractal:recurse $ARGUMENTS`. STOP.
 
 ### 5. VALIDATE (post-execution)
 
@@ -127,7 +127,7 @@ After try or sprint completes and human has seen the result:
 
 Ask: "Predicado satisfeito?"
 - Yes → write `status: satisfied` in active node's predicate.md. Go to step 6 (ASCEND).
-- No → Invoke `/fractal:recurse $0`. STOP.
+- No → Invoke `/fractal:recurse $ARGUMENTS`. STOP.
 
 ### 6. ASCEND (return)
 
@@ -136,9 +136,9 @@ Active node is satisfied or pruned. Bubble up.
 6a. If active node is the tree root (`depth: 0`):
 - Print "Árvore completa. Predicado raiz satisfeito." STOP.
 
-6b. Update `active_node` in `$0/root.md` to `parent_path` from state.
+6b. Update `active_node` in `$ARGUMENTS/root.md` to `parent_path` from state.
 
-6c. Invoke `/fractal:recurse $0`. STOP.
+6c. Invoke `/fractal:recurse $ARGUMENTS`. STOP.
 
 ---
 
