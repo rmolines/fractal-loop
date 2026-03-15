@@ -27,7 +27,8 @@ fi
 # detected <field> <value> <source>
 detected() {
   local field="$1" value="$2" source="$3"
-  printf "%-35s # detected from %s\n" "${field}: ${value}" "${source}"
+  printf "# detected from %s\n" "${source}"
+  printf "%s: %s\n" "${field}" "${value}"
 }
 
 # --- Helper: emit an undetected required field ---
@@ -208,7 +209,8 @@ detect_protected_branches() {
   local branches=""
   branches=$(git -C "$TARGET" branch -l main master 2>/dev/null | sed 's/^[* ]*//' | grep -v '^$' || true)
   if [ -n "$branches" ]; then
-    echo "protected-branches:  # detected from git branch"
+    echo "# detected from git branch"
+    echo "protected-branches:"
     while IFS= read -r branch; do
       echo "- $branch"
     done <<< "$branches"
@@ -242,6 +244,34 @@ detect_verify() {
   undetected_optional "verify" "<command>"
 }
 
+detect_hooks() {
+  local found_hooks=()
+  # Check .husky/ directory
+  if [ -d "$TARGET/.husky" ]; then
+    for hook in pre-commit pre-push; do
+      if [ -f "$TARGET/.husky/$hook" ]; then
+        found_hooks+=(".husky/$hook")
+      fi
+    done
+  fi
+  # Check .git/hooks/ for executable (non-sample) hooks
+  if [ -d "$TARGET/.git/hooks" ]; then
+    for hook in pre-commit pre-push; do
+      if [ -f "$TARGET/.git/hooks/$hook" ] && [ -x "$TARGET/.git/hooks/$hook" ]; then
+        found_hooks+=(".git/hooks/$hook")
+      fi
+    done
+  fi
+  if [ ${#found_hooks[@]} -gt 0 ]; then
+    echo "# Pre-existing hooks detected:"
+    for h in "${found_hooks[@]}"; do
+      echo "# - $h"
+    done
+  else
+    echo "# No pre-existing hooks detected"
+  fi
+}
+
 # ============================================================
 # Generate output
 # ============================================================
@@ -264,6 +294,7 @@ HEADER
   detect_lint
   detect_type_check
   detect_smoke
+  detect_hooks
 
   echo ""
   echo "## Commit"
