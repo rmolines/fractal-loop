@@ -33,6 +33,35 @@ progress toward the parent by definition, with no tracking mechanism needed. And
 because the tree grows one node at a time with a parent re-evaluation after each,
 the plan stays honest without a separate review phase.
 
+## What it looks like
+
+```
+$ /fractal add stripe billing to the app
+
+> Before I create the predicate — do you need one-time payments,
+> recurring subscriptions, or both?
+
+Both. Monthly plans and per-seat pricing.
+
+> Predicate: "Users can subscribe to a monthly plan and be billed
+> per seat via Stripe, with plan changes taking effect immediately."
+> Shall I create the node and start decomposition?
+
+Yes.
+
+> Created .fractal/stripe-billing/predicate.md
+> Proposing first child: "Stripe customer is created on signup and
+> linked to the user record." Starting there.
+
+------- next day -------
+
+$ /fractal
+
+> Reading .fractal/stripe-billing/ ...
+> Active node: webhook-handler — plan.md exists, results.md missing.
+> Picking up at delivery. Running subagents now.
+```
+
 ## The operation
 
 One function, applied at any scale:
@@ -72,16 +101,24 @@ Commands use the `/fractal` prefix — named after the recursive operation at it
 
 ## Skills
 
-| Skill | Invoke | What it does |
-|---|---|---|
-| `/fractal` | `/fractal build a cycling map app` | Entry point. Extracts the root predicate, creates the tree, or resumes from the active node. |
-| `/fractal` (resume) | `/fractal` | No arguments — reads `.fractal/`, finds the active node, continues. |
-| `/fractal:try` | `/fractal:try add dark mode toggle` | Fast path for simple predicates. Implements in an isolated worktree, shows diff, approve or discard. |
-| `/fractal:planning` | `/fractal:planning .fractal/auth-flow` | Turns a predicate into an executable plan with parallel deliverables and a DAG. |
-| `/fractal:delivery` | `/fractal:delivery .fractal/auth-flow` | Orchestrates subagents in parallel batches against the plan. Hard gate: baseline must pass first. |
-| `/fractal:review` | `/fractal:review .fractal/auth-flow` | Spawns an independent evaluator that checks the diff against the predicate. Four outcomes: approved, back to delivery, back to planning, back to fractal. |
-| `/fractal:ship` | `/fractal:ship .fractal/auth-flow` | PR + CI + deploy + simplify + docs + cleanup. Marks predicate as satisfied. |
-| `/fractal:view` | `/fractal:view` | Generates an HTML dashboard of the predicate tree and opens it in the browser. |
+You only need one command: `/fractal`. It orchestrates everything else.
+
+**You use:**
+
+| Skill | What it does |
+|---|---|
+| `/fractal` | Entry point — extracts the root predicate, creates the tree, or resumes from the active node. |
+| `/fractal:try` | Fast path for simple predicates. Implements in an isolated worktree, shows diff, approve or discard. |
+| `/fractal:view` | Generates an HTML dashboard of the predicate tree and opens it in the browser. |
+
+**Runs internally** (called by `/fractal` when needed):
+
+| Skill | What it does |
+|---|---|
+| `/fractal:planning` | Turns a predicate into an executable plan with parallel deliverables and a DAG. |
+| `/fractal:delivery` | Orchestrates subagents in parallel batches against the plan. Hard gate: baseline must pass first. |
+| `/fractal:review` | Spawns an independent evaluator that checks the diff against the predicate. Four outcomes: approved, back to delivery, back to planning, back to fractal. |
+| `/fractal:ship` | PR + CI + deploy + simplify + docs + cleanup. Marks predicate as satisfied. |
 
 ## The tree
 
