@@ -45,16 +45,7 @@ Input: $ARGUMENTS — an objective in natural language, or empty to resume.
 
 ## On entry
 
-```bash
-# Detect project context
-REPO_ROOT=""
-if git rev-parse --is-inside-work-tree 2>/dev/null; then
-  REPO_ROOT=$(git rev-parse --show-toplevel)
-fi
-
-# Find the tree
-FRACTAL_DIR="${REPO_ROOT:-.}/.fractal"
-```
+Detect project context: check if inside a git repo, find the `.fractal/` directory.
 
 ### Route
 
@@ -69,19 +60,7 @@ Note: `/fractal:try` can be invoked standalone (without going through `/fractal`
 When it is, it operates without a tree context and persists results as orphan nodes in
 `.fractal/_orphans/`. See `commands/try.md` for details.
 
-```bash
-# List existing trees (each top-level dir under .fractal/ with a root.md is a tree)
-TREES=$(find "$FRACTAL_DIR" -maxdepth 2 -name "root.md" -exec dirname {} \; 2>/dev/null)
-```
-
-```bash
-# Read learnings if they exist
-LEARNINGS_FILE="$FRACTAL_DIR/learnings.md"
-if [ -f "$LEARNINGS_FILE" ]; then
-  # Read and use accumulated insights to calibrate predicate proposals
-  cat "$LEARNINGS_FILE"
-fi
-```
+Run `bash scripts/fractal-state.sh <tree-path>` to get current state of a tree.
 
 When listing trees, show:
 ```
@@ -93,203 +72,30 @@ When listing trees, show:
 Qual árvore? (ou descreva um novo objetivo)
 ```
 
+If `.fractal/learnings.md` exists, read it on entry to calibrate predicate proposals.
+
 ---
 
 ## Phase 0: Extract the objective (pre-condition)
 
-This is NOT part of the primitive — it's the pre-condition. Invest maximum energy here.
-A 95% good predicate makes everything downstream work. A 70% good predicate causes
-cascading rework.
+This is NOT part of the primitive — it's the pre-condition.
+Read `references/phase0.md` for the full extraction protocol (crystallization,
+scope assessment, risk identification, investigation cycles).
 
-### Crystallize the problem
-
-Use whatever techniques serve the situation — don't apply them mechanically:
-
-- **Inversion:** "What would definitely NOT be a good solution?"
-- **Level separation:** "The surface frustration is X... but what's underneath?"
-- **Transfer test:** "If you didn't exist, would someone else have this problem?"
-
-Converge on a clear problem statement. Iterate until the human recognizes it:
-"Yes, that's it." If they can't confirm, you haven't found it yet.
-
-### Assess scope — one predicate or many?
-
-Once the problem is clear, evaluate whether it's one predicate or multiple:
-
-**Signs it's actually multiple predicates:**
-- The problem has 3+ distinct user flows with no shared state
-- You can't write a single, focused predicate without "and"
-- Different parts could ship independently and each deliver value alone
-- Planning would need 9+ deliverables to cover everything
-
-**If it's multiple:** push back and propose decomposition into child nodes.
-
-> "This looks like 3 separate things: auth, dashboard, and billing. Each delivers
-> value independently. I suggest we create separate nodes for each. Which one first?"
-
-Then create child directories under `.fractal/` — each with its own `predicate.md`.
-The user runs `/fractal` on each independently.
-
-### Identify risks
-
-With the problem defined, map risks that need validation before building:
-
-| Risk type | When relevant | Cheap validation |
-|---|---|---|
-| Strategy / domain | Agent lacks empirical knowledge about what works in this domain | Web research: find 3-5 real cases, extract patterns |
-| Usability / UX | Has a user-facing interface | HTML mockup |
-| Technical | Integration, API, performance | Spike (throwaway code) |
-| Business / market | New product, monetization | Web research + analysis |
-| Distribution | How it reaches users | Channel analysis |
-| Integration | Depends on external service | API test, spike |
-
-**Strategy / domain risk is the most commonly missed.** Before proposing sub-predicates,
-ask: "Do I have empirical knowledge about what actually works here, or am I guessing?"
-If guessing → the first sub-predicate should be a research investigation, not execution.
-
-Present the risks and propose investigation order. Not all predicates need investigation —
-if the predicate is clear and risks are low, skip straight to execution.
-
-### Investigation cycles (when needed)
-
-Before committing to a predicate, you may need to reduce uncertainty:
-
-**research** — Launch 2-3 parallel subagents (model: sonnet) with WebSearch. Synthesize
-results. Update notes in `predicate.md`.
-
-**mockup** — Generate static HTML + Tailwind CSS + hardcoded data. Throwaway code.
-Iterate with the human until aligned. Save in node dir.
-
-**spike** — Write minimum code that answers "is this feasible?". Execute and collect
-result. Save conclusion in notes.
-
-**interview** — Prepare 3-5 focused questions. Human conducts externally. Synthesize
-responses into notes.
-
-**analysis** — Structured analysis (pros/cons, impact/effort, build vs buy). Document
-decision in notes.
-
-### Converge on the predicate
-
-After crystallization and any investigation:
-
-1. Converge on a falsifiable predicate in the **useful zone of abstraction**:
-   - Too abstract ("facilitate urban mobility") → won't discriminate
-   - Useful ("app showing bike lanes in real time for cyclists in SP") → rejects irrelevant, survives changes
-   - Too concrete ("PWA with Mapbox GL + CET API layer") → rigid plan disguised as objective
-   - Test: if the entire tech stack changed, would this predicate still make sense?
-2. When the user confirms → create the root directory and `predicate.md` → save to disk
-
-### Calibrate depth
-
-| Context | Approach |
-|---|---|
-| New project, vague idea, no data | Deep — multiple rounds, Socratic extraction, investigation cycles |
-| Existing project, clear feature | Light — synthesize + validate in one round, skip investigation |
-| Existing project, trivial feature | Skip Phase 0 — go straight to the primitive |
-
-Default to light inside an existing repo. Deep is the exception.
+Key principle: a 95% good predicate makes everything downstream work. Invest
+maximum energy here. Calibrate depth to context (deep for new projects, light
+for existing repos).
 
 ---
 
 ## Filesystem structure
 
-The tree IS the filesystem. Each top-level directory under `.fractal/` is an independent
-tree. Each subdirectory within a tree is a predicate node. Artifacts from the execution
-cycle live inside the node.
+Read `references/filesystem.md` for the full spec. Summary:
 
-```
-.fractal/
-  ciclofaixas/                 # tree 1
-    root.md                    # root predicate + active node pointer
-    dados-cet/                 # predicate node (child of root)
-      predicate.md             # falsifiable condition, status, notes
-      plan.md                  # from /fractal:planning
-      results.md               # from /fractal:delivery
-      review.md                # from /fractal:review
-      endpoint-geojson/        # nested predicate (grandchild)
-        predicate.md
-        plan.md
-        results.md
-        review.md
-    mapa-renderiza/            # predicate node (child of root)
-      predicate.md
-  onboarding-flow/             # tree 2 (independent)
-    root.md
-    signup-step/
-      predicate.md
-```
-
-### root.md (inside each tree directory)
-
-```markdown
----
-predicate: "the root falsifiable condition"
-status: pending
-active_node: dados-cet/endpoint-geojson
-created: 2026-03-14
----
-
-# Root history
-
-Previous roots are recorded here when the objective mutates.
-```
-
-### predicate.md (inside each node directory)
-
-```markdown
----
-predicate: "the falsifiable condition for this node"
-status: pending | satisfied | pruned | candidate
-created: 2026-03-14
----
-
-# Notes
-
-Context from execution: what was tried, what was learned, why decisions were made.
-```
-
-**Status `candidate`:** hypothetical sub-predicates generated during subdivision but not
-selected as the active child. They persist in the hierarchy for future discovery rounds.
-A candidate is NOT human-validated — it's the agent's hypothesis. When the parent is
-re-evaluated, existing candidates are read before proposing new sub-predicates.
-
-### Deriving execution state from artifacts
-
-The execution state of a node is NEVER stored explicitly — it's derived from which
-artifacts exist in the directory:
-
-| Artifacts present | Execution state | What to do |
-|---|---|---|
-| Only `predicate.md` | Not started | Evaluate: try, cycle, or subdivide |
-| `predicate.md` + child dirs | Subdivided | Check children's status |
-| `plan.md` exists | Planned | Run delivery |
-| `plan.md` + `results.md` | Executed | Run review |
-| `plan.md` + `results.md` + `review.md` | Reviewed | HITL validate, then ship or redo |
-| `status: satisfied` in frontmatter | Satisfied | Move to parent |
-| `status: pruned` in frontmatter | Pruned | Move to parent |
-| `status: candidate` in frontmatter | Candidate | Skip — hypothetical, not yet human-validated |
-
-This means a new session can always determine exactly where execution stopped by
-reading the filesystem. Zero stale state.
-
-### Notes discipline
-
-Before any checkpoint (user validation, `/clear`, end of session), update the `# Notes`
-section of the active node's `predicate.md` with:
-- What was attempted and the outcome
-- Key decisions made and why
-- What the next session needs to know to continue
-
-A new session reads `predicate.md` and has full context. If notes are empty, context is lost.
-
-### Conventions
-
-- Directory name = slug of the predicate (kebab-case, short)
-- Depth = nesting of directories
-- Status is in `predicate.md` frontmatter, execution state is derived from artifacts
-- `active_node` in `root.md` is a relative path to the active node's directory
-- Cycle artifacts (`plan.md`, `results.md`, `review.md`) follow schemas in `templates/schemas.md`
+- Each tree = top-level dir under `.fractal/` with `root.md`
+- Each node = subdir with `predicate.md` (status: pending|satisfied|pruned|candidate)
+- Execution state derived from artifacts: plan.md, results.md, review.md
+- `active_node` in root.md = relative path to current working node
 - `ls` shows the tree. `cat` shows the state. No parser needed.
 
 ---
@@ -300,21 +106,10 @@ Read `LAW.md` for the full specification. Here is the operational flow:
 
 ### 1. Find the active node
 
-Read `.fractal/<tree>/root.md` → get `active_node` path → read that node's `predicate.md` →
-list artifacts in the directory to derive execution state.
+Run: `bash scripts/fractal-state.sh .fractal/<tree>`
 
-Present it:
-
-```
-Projeto: "<root predicate>"
-Nó ativo: "<active predicate>"
-Caminho: <path from root>
-Pai: "<parent predicate>" (or "raiz" if top-level)
-Estado: <derived from artifacts — e.g. "planned, awaiting delivery">
-Filhos satisfeitos: N/M
-```
-
-If notes exist in `predicate.md`, read them to recover context from the previous session.
+Present the breadcrumb and state from the script output. If notes exist in the active
+node's `predicate.md`, read them to recover context.
 
 ### 2. Evaluate the predicate
 
@@ -338,7 +133,7 @@ If you hesitate on ANY criterion, the answer is no — move to Check 3 or 4.
 
 If yes → propose to the user: "Este predicado é simples o suficiente pra um try. Concordo?"
 If confirmed → invoke `/fractal:try` with the predicate text as the task description.
-After try completes → ask user to validate the predicate was satisfied.
+After try completes → ask user to validate → handle result per step 3 (which recurses).
 
 **Check 3: Can a full cycle satisfy it?**
 The predicate is complex but self-contained — one cycle of planning → delivery → review → ship
@@ -358,21 +153,14 @@ If confirmed → invoke `/fractal:planning` with the node directory path as argu
 (e.g. `.fractal/dados-ciclofaixas`), then follow with `/fractal:delivery`,
 `/fractal:review`, `/fractal:ship` — each receiving the same node path.
 Artifacts are saved inside the node directory.
-After cycle completes → ask user to validate the predicate was satisfied.
+After cycle completes → ask user to validate → handle result per step 3 (which recurses).
 
 **Check 4: None of the above → subdivide**
 The predicate is too large or uncertain. This is discovery at this level of the tree.
 
 **Step 0 — Check for existing candidates:**
 
-Before generating new sub-predicates, scan child directories for `status: candidate`:
-
-```bash
-# Find candidate children in the current node directory
-CANDIDATES=$(find "$NODE_DIR" -maxdepth 2 -name "predicate.md" -exec \
-  grep -l "^status: candidate" {} \; 2>/dev/null)
-```
-
+Before generating new sub-predicates, scan child directories for `status: candidate`.
 If candidates exist, read them. They represent hypotheses from previous subdivision
 rounds. Consider whether any of them is now the right next child — context may have
 changed since they were generated (siblings satisfied, learnings accumulated).
@@ -422,30 +210,12 @@ Recomendo o #1. Aceita, ou prefere outro?
 When the user accepts (or picks a different candidate):
 
 - **Selected candidate:** create child directory with `predicate.md` (`status: pending`),
-  update `active_node` in `root.md`. Run the primitive on the new child.
+  update `active_node` in `root.md`. **Then recurse: go back to step 1 (Find the active
+  node) and evaluate the new child.** This is the core recursion — every subdivision
+  triggers a new evaluation cycle on the child.
 - **Non-selected candidates:** create their directories with `predicate.md`
-  (`status: candidate`). These persist in the hierarchy for future discovery rounds.
-
-```bash
-# For each non-selected candidate:
-CANDIDATE_DIR="$NODE_DIR/<candidate-slug>"
-mkdir -p "$CANDIDATE_DIR"
-```
-
-```markdown
----
-predicate: "<the candidate predicate>"
-status: candidate
-created: <date>
-proposed_by: agent
-rationale: "<why this was considered>"
----
-
-# Notes
-
-Generated as candidate during subdivision of parent "<parent predicate>".
-Not selected because: <brief reason the selected one was preferred>.
-```
+  (`status: candidate`). Frontmatter fields: predicate, status, created, proposed_by, rationale.
+  Notes section: why this was generated and why the other was preferred.
 
 If the user rejects ALL candidates and proposes something entirely different → create
 their proposal as the active child (`status: pending`), keep the agent's candidates
@@ -463,13 +233,15 @@ After execution (try or cycle):
 **User confirms predicate satisfied:**
 - Set `status: satisfied` in node's `predicate.md`
 - Update `active_node` in `root.md` to parent directory
-- Re-evaluate parent: maybe it's now satisfiable, maybe it needs another child
-- During re-evaluation, check for `status: candidate` siblings — they may be the
-  natural next child without generating new candidates from scratch
+- **Recurse: go back to step 1 (Find the active node) and evaluate the parent.**
+  The parent may now be satisfiable (all children done), may need another child
+  (check `status: candidate` siblings first), or may itself be satisfied (bubble up).
+  This upward recursion continues until a node needs work or the root is satisfied.
 
 **User says not satisfied:**
 - Keep node as active, status remains `pending`
-- Re-run the primitive (will re-evaluate and try again or subdivide further)
+- **Recurse: go back to step 1 (Find the active node) and re-evaluate the same node.**
+  It will re-enter the checks and either try again, subdivide further, or prune.
 
 ### 4. Objective mutation
 
@@ -486,72 +258,51 @@ If the user decides the root objective has changed:
 When called with no arguments and `.fractal/` exists:
 
 1. List trees. If 1 tree → enter it. If N trees → ask which one.
-2. Read `<tree>/root.md`
-3. Show current state:
+2. Run `bash scripts/fractal-state.sh .fractal/<tree>` to get current state.
+3. Show current state using script output:
    ```
    Árvore: <tree name>
    Projeto: <root predicate>
    Nó ativo: <active predicate>
-   Caminho: <path>
-   Profundidade: N
-   Predicados satisfeitos: X/Y total
+   Caminho: <breadcrumb>
+   Estado: <state>
+   Filhos: <satisfied>/<total>
    ```
-4. Run the primitive on the active node
+4. Run the primitive on the active node.
 
 ---
 
 ## Learnings from invalidation
 
-Every time the human invalidates something — rejects a proposed predicate, changes a
-predicate the agent wrote, says a result didn't satisfy the predicate — this reveals
-information about what the human actually wants. **Capture it.**
+Read `references/learnings.md` for the full capture protocol.
+Key rule: every time the human invalidates something (rejects predicate, says result
+didn't satisfy), append to `.fractal/learnings.md`. Read it on every `/fractal` entry.
 
-### What counts as invalidation
+---
 
-- Agent proposes sub-predicate X, human says "no" or proposes Y instead
-- Agent writes a predicate, human edits it to something different
-- Human says result didn't satisfy the predicate (and explains why)
-- Human mutates the root objective
-- Human prunes a node the agent thought was viable
+## The recursion loop
 
-### How to capture
+**CRITICAL:** The primitive is a loop, not a linear sequence. After every state transition
+that changes the active node, you MUST go back to step 1 and re-evaluate. Concretely:
 
-Append to `.fractal/learnings.md` (create if it doesn't exist):
-
-```markdown
-## <date> — <tree-name>/<node-path>
-
-**Proposed:** <what the agent proposed>
-**Human preferred:** <what the human said instead>
-**Insight:** <1 sentence — what this reveals about the human's mental model or preferences>
+```
+loop:
+  1. Find active node → read state
+  2. Evaluate (checks 1-4)
+  3. Execute (prune / try / cycle / subdivide)
+  4. Human validates result
+  5. Update status + active_node
+  6. → GO TO 1 (with new active node)
 ```
 
-### How to use
+The loop runs until:
+- The root predicate is satisfied (project complete)
+- The human explicitly stops ("vamos parar por aqui")
+- The conversation context is exhausted (save notes before stopping)
 
-On every `/fractal` entry, if `.fractal/learnings.md` exists, **read it**. Use the
-accumulated insights to:
-- Propose better-calibrated predicates (avoid patterns the human has rejected before)
-- Understand the human's abstraction preferences (too concrete? too abstract?)
-- Anticipate the human's priorities and risk tolerance
-
-Learnings are cumulative — they build a picture of the human's judgment over time.
-Don't delete entries. The file grows as the project evolves.
-
-### Examples
-
-```markdown
-## 2026-03-14 — ciclofaixas/dados-cet
-
-**Proposed:** "endpoint /api/lanes retorna GeoJSON com todas as ciclofaixas da cidade"
-**Human preferred:** "endpoint retorna GeoJSON filtrado por região, com cache de 5min"
-**Insight:** humano prioriza performance e scoping geográfico sobre completude dos dados
-
-## 2026-03-14 — onboarding-flow
-
-**Proposed:** sub-predicado de spike técnico para testar auth provider
-**Human preferred:** sub-predicado de mockup UX do signup flow
-**Insight:** humano prioriza validação de UX antes de viabilidade técnica neste projeto
-```
+**Never stop after creating a child predicate.** Creating a child and not evaluating it
+is the most common failure mode — it breaks the recursion and forces the human to
+manually invoke `/fractal` again.
 
 ---
 
