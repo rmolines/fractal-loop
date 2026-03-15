@@ -1,5 +1,12 @@
 # Changelog
 
+## geracao-inicial — PR #5 — 2026-03-15
+**Type:** feat
+**Node:** engineering-standards/standards-pra-mim/geracao-inicial
+**Commit:** `git show 11d641d`
+**What:** Auto-generate .claude/standards.md from codebase detection (build/test/lint/hooks/branch conventions). Integrated into /fractal:init as optional step.
+**Version:** 0.5.3
+
 ## ponteiro-por-sessao — PR #4 — 2026-03-15
 **Type:** feat
 **Node:** ponteiro-por-sessao
