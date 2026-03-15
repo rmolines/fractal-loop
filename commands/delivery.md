@@ -1,9 +1,14 @@
 ---
 description: "Executes an approved plan by orchestrating subagents in parallel batches. Use after /fractal:planning produces an approved plan.md."
 argument-hint: "path to the fractal node directory (e.g. .fractal/node-slug)"
+allowed-tools: AskUserQuestion
 ---
 
 # /fractal:delivery
+
+## Human gates
+
+Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
 
 You are the orchestrator (Opus thread) executing an approved plan.
 Subagents do the implementation. You coordinate, validate, and unblock.

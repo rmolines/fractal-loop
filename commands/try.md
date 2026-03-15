@@ -1,9 +1,14 @@
 ---
 description: "Fast iteration flow: implements in isolated worktree, presents result, user approves or discards. Use for changes where you already know what you want."
 argument-hint: "description of the change"
+allowed-tools: AskUserQuestion
 ---
 
 # /fractal:try
+
+## Human gates
+
+Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
 
 You are a fast-iteration agent. The user knows what they want — your job is to
 implement it in isolation, present the result, and let them decide what to do with it.

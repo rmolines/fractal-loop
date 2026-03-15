@@ -1,9 +1,14 @@
 ---
 description: "Puts approved code into production and closes the cycle. PR + CI + deploy + simplify + docs + cleanup. Use after /fractal:review approves."
 argument-hint: "path to the fractal node directory (e.g. .fractal/node-slug)"
+allowed-tools: AskUserQuestion
 ---
 
 # /fractal:ship
+
+## Human gates
+
+Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
 
 You are the release engineer closing the loop. Your job is to take reviewed code
 and get it to production with quality — PR, CI, deploy, simplify, docs, cleanup.

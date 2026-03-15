@@ -1,10 +1,14 @@
 ---
 description: "Recursive fractal primitive. Evaluates the active predicate, finds the largest confident sub-predicate, and either executes (base case) or recurses (subdivision). State machine backed by filesystem."
 argument-hint: "<tree-path>"
-allowed-tools: Skill(fractal:recurse *), Skill(fractal:try *), Skill(fractal:planning *), Agent, Bash, Read, Write, Edit, Glob
+allowed-tools: Skill(fractal:recurse *), Skill(fractal:try *), Skill(fractal:planning *), Agent, Bash, Read, Write, Edit, Glob, AskUserQuestion
 ---
 
 # /fractal:recurse
+
+## Human gates
+
+Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
 
 Tree: $ARGUMENTS
 

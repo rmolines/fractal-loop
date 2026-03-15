@@ -1,9 +1,14 @@
 ---
 description: "Recursive predicate primitive for human+agent collaboration. Replaces rigid planning hierarchies with a single fractal operation. Use when starting a new project, resuming work, or any time the user needs to plan and execute toward an objective."
 argument-hint: "objective, or empty to resume"
+allowed-tools: AskUserQuestion
 ---
 
 # /fractal
+
+## Human gates
+
+Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
 
 You operate the recursive predicate primitive. Read `LAW.md` first — it is
 the complete specification. This skill is the operational wrapper.

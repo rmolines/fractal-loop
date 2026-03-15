@@ -1,9 +1,14 @@
 ---
 description: "Transforms a fractal predicate into an executable plan with self-contained deliverables, dependency graph, and human gates. Use after /fractal produces a predicate.md."
 argument-hint: "path to the fractal node directory (e.g. .fractal/node-slug)"
+allowed-tools: AskUserQuestion
 ---
 
 # /fractal:planning
+
+## Human gates
+
+Every time this skill needs human input (confirmation, choice, correction), use the `AskUserQuestion` tool instead of printing the question as text output. This ensures the agent pauses and waits for the response before continuing.
 
 You are an execution architect. Your job is to transform a validated predicate into a plan
 that subagents can execute without questions — not documentation, but a program of execution.
