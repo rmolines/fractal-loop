@@ -58,6 +58,20 @@ when something doesn't add up, and challenge scope or assumptions.
 
 !`cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" && FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1); [ -n "$FRACTAL_SCRIPTS" ] && bash "$FRACTAL_SCRIPTS/active-predicate.sh" 2>/dev/null || echo "predicate: error"`
 
+## Tree (pre-loaded)
+
+!`cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" && FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1); [ -n "$FRACTAL_SCRIPTS" ] && bash "$FRACTAL_SCRIPTS/fractal-tree.sh" 2>/dev/null || echo "tree: error"`
+
+## Lock (pre-loaded)
+
+!`cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" && FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1); ACTIVE=$(grep "^active_node:" .fractal/root.md 2>/dev/null | sed 's/^active_node: //' | tr -d '"'); [ -n "$FRACTAL_SCRIPTS" ] && [ -n "$ACTIVE" ] && [ "$ACTIVE" != "." ] && bash "$FRACTAL_SCRIPTS/session-lock.sh" check "$ACTIVE" 2>/dev/null || echo "locked: n/a"`
+
+## Scripts path (for runtime mutations)
+
+!`ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1`
+
+In all runtime bash calls below, `<scripts_path>` refers to this pre-loaded value. Use it directly — never re-resolve with `ls -d`.
+
 ---
 
 ## Statechart — the canonical spec
@@ -84,17 +98,9 @@ calling `/fractal:run` again from the same state produces the same behavior.
 
 ### 1. GUARD
 
-Read pre-loaded state.
+Read pre-loaded state, tree, and lock status. All are already in the prompt — no bash calls needed.
 
-**Always show the tree first** (unless state is error):
-
-```bash
-FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1)
-bash "$FRACTAL_SCRIPTS/fractal-tree.sh"
-```
-
-Print the tree output immediately — this gives the human instant spatial awareness
-of where we are before any decision is made.
+**Print the pre-loaded tree output** immediately (unless state is error) — this gives the human instant spatial awareness of where we are before any decision is made.
 
 Then route:
 
@@ -105,18 +111,14 @@ Then route:
 
 #### Ownership check (active_node is not ".")
 
-Another session may have set `active_node` in `root.md`. Before working on it, verify this session owns the lock:
+Another session may have set `active_node` in `root.md`. Use the **pre-loaded lock status** to verify ownership. No bash call needed for the check.
 
-```bash
-FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1)
-bash "$FRACTAL_SCRIPTS/session-lock.sh" check <active_node>
-```
-
-Parse the output:
+Parse the pre-loaded Lock output:
 
 - `locked: true` AND `pid` ≠ `$PPID` → the node belongs to another live session. **Treat as session traversal** (go to "Session traversal" below).
 - `locked: true` AND `pid` = `$PPID` → this session owns it. Continue routing below.
-- `locked: false` → no lock exists. Claim it: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <active_node>`. Continue routing below.
+- `locked: false` → no lock exists. Claim it: `bash "<scripts_path>/session-lock.sh" create <active_node>` (use the pre-loaded Scripts path). Continue routing below.
+- `locked: n/a` → active_node is "." or no tree. Handled by other routes.
 
 After ownership is confirmed, route:
 
@@ -128,9 +130,10 @@ After ownership is confirmed, route:
 This happens at the start of a fresh session. Find the best pending node and confirm with the human before focusing.
 
 ```bash
-FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1)
-bash "$FRACTAL_SCRIPTS/select-next-node.sh"
+bash "<scripts_path>/select-next-node.sh"
 ```
+
+(Use the pre-loaded Scripts path value.)
 
 Parse the output:
 
@@ -149,21 +152,14 @@ Selecionado por: <reason from select-next-node output>
 Confirma? (sim / escolher outro)
 ```
 
-- **Confirmed** → create session lock for the selected node: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <selected_node>`. Then update `active_node` in `root.md` to `selected_node`. Invoke `/fractal:run`. STOP.
-- **Rejected** → show the tree (run `fractal-tree.sh`) and ask the human which node they prefer. Create session lock: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <chosen_node>`. Update `active_node` in `root.md` to the human's chosen path. Invoke `/fractal:run`. STOP.
+- **Confirmed** → create session lock for the selected node: `bash "<scripts_path>/session-lock.sh" create <selected_node>`. Then update `active_node` in `root.md` to `selected_node`. Invoke `/fractal:run`. STOP.
+- **Rejected** → show the tree (run `fractal-tree.sh`) and ask the human which node they prefer. Create session lock: `bash "<scripts_path>/session-lock.sh" create <chosen_node>`. Update `active_node` in `root.md` to the human's chosen path. Invoke `/fractal:run`. STOP.
 
 Note: `select-next-node.sh` automatically ignores stale locks (dead PIDs). No manual cleanup needed.
 
 ### 2. SHOW
 
-Run the tree renderer:
-
-```bash
-FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1)
-bash "$FRACTAL_SCRIPTS/fractal-tree.sh"
-```
-
-Print:
+The tree is already pre-loaded — no bash call needed. Print:
 
 ```
 📍 <breadcrumb> | <state>
@@ -330,11 +326,10 @@ Active node is satisfied or pruned. Bubble up.
 - If `active_status: satisfied` → "Predicado raiz satisfeito. Arvore completa." STOP.
 - If `active_status: pruned` → "Predicado raiz podado. Execute /fractal:init para redefinir." STOP.
 
-6b. Remove session lock for the current node: `bash "$FRACTAL_SCRIPTS/session-lock.sh" remove <active_node>`. Then run `select-next-node.sh` to find the next pending node:
+6b. Remove session lock for the current node: `bash "<scripts_path>/session-lock.sh" remove <active_node>` (use pre-loaded Scripts path). Then run `select-next-node.sh` to find the next pending node:
 
 ```bash
-FRACTAL_SCRIPTS=$(ls -d ~/.claude/plugins/cache/fractal/fractal/*/scripts 2>/dev/null | tail -1)
-bash "$FRACTAL_SCRIPTS/select-next-node.sh"
+bash "<scripts_path>/select-next-node.sh"
 ```
 
 6c. If `selected_node: none`:
@@ -344,7 +339,7 @@ bash "$FRACTAL_SCRIPTS/select-next-node.sh"
 
 6d. If a next node was found:
 - Remove session lock for the old node (already done in 6b).
-- Create session lock for the new node: `bash "$FRACTAL_SCRIPTS/session-lock.sh" create <selected_node>`.
+- Create session lock for the new node: `bash "<scripts_path>/session-lock.sh" create <selected_node>`.
 - Update `active_node` in `root.md` to `selected_node` directly (no `"."` intermediate).
 - Print: "Nó [satisfied|pruned]. Avançando para '<selected_predicate>'."
 - Invoke `/fractal:run`. STOP.
