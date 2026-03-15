@@ -41,6 +41,49 @@ Read in parallel:
 2. `predicate.md` — the falsifiable condition for this node (the product reference)
 3. `.claude/project.md` — build/test commands, hot files
 
+### Load project context
+
+Scan the `.fractal/` tree to understand what has already been built. This provides the agent with awareness of sibling nodes, previous deliveries, and accumulated project state.
+
+```bash
+# Find the tree root (parent of the node directory that contains root.md)
+TREE_DIR=$(dirname "$NODE_DIR")
+while [ ! -f "$TREE_DIR/root.md" ] && [ "$TREE_DIR" != "$REPO_ROOT/.fractal" ]; do
+  TREE_DIR=$(dirname "$TREE_DIR")
+done
+
+# Read root predicate
+ROOT_PRED=$(grep "^predicate:" "$TREE_DIR/root.md" | sed 's/^predicate: //' | tr -d '"')
+
+# Find all satisfied nodes
+find "$TREE_DIR" -name "predicate.md" -exec grep -l "status: satisfied" {} \;
+
+# For each satisfied node, extract: predicate text + files from results.md
+```
+
+Build this block and keep it in working memory:
+
+```
+[PROJECT CONTEXT — auto-loaded from .fractal/]
+Tree: <tree-name>
+Root: "<root predicate>"
+
+Satisfied nodes:
+- <slug>: "<predicate>" → files: <comma-separated from results.md files_changed>
+- <slug>: "<predicate>" → files: <comma-separated from results.md files_changed>
+
+Pending siblings: <slugs of sibling nodes with status: pending>
+Active: <current node path>
+```
+
+If no satisfied nodes exist: omit the "Satisfied nodes" section entirely.
+If the tree has only the current node: show only Root and Active.
+
+Use this context when:
+- Writing deliverable prompts (include relevant prior work as context for the subagent)
+- Assessing scope (avoid re-implementing what a satisfied node already delivered)
+- Identifying dependencies on prior deliveries (files that were created by earlier nodes)
+
 **Critical:** Read project.md in the same parallel batch as plan.md/predicate.md.
 The build/test commands come from project.md — without it, baseline check will fail
 with wrong commands.
@@ -211,6 +254,7 @@ Worktree path: <path, if applicable>
 Build command: <from project.md>
 Test command: <from project.md>
 Hot files (read before editing): <list from project.md>
+Project context (prior deliveries): <satisfied nodes summary from project context, or "First node — no prior deliveries">
 
 [DELIVERABLE PROMPT]
 <original prompt from the plan>
