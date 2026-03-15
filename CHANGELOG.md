@@ -1,5 +1,11 @@
 # Changelog
 
+## contexto-cross-node — PR #2 — 2026-03-15
+**Type:** feat
+**Node:** contexto-cross-node
+**Commit:** `git show 2f8afe9`
+**What:** Planning and delivery skills now auto-load project context (satisfied nodes, files created) at startup — no human prompt needed. Applied to both fractal and launchpad frameworks.
+
 ## teste-pos-delivery — PR #1 — 2026-03-14
 **Type:** feat
 **Node:** progressive-dx/teste-pos-delivery
