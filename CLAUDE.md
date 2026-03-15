@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-OpenPredicaTree (aka "fractal") — a Claude Code plugin that implements a recursive predicate primitive for human+agent collaboration. Instead of task lists, the agent decomposes goals into falsifiable predicates and works on the riskiest unknown first. One operation, repeated at any scale.
+Fractal — recursive project management for Claude Code. A plugin that decomposes goals into predicates and works on the riskiest unknown first. One operation, repeated at any scale.
 
 **Version:** 0.4.1 | **Plugin manifest:** `.claude-plugin/plugin.json`
 
@@ -43,6 +43,7 @@ fractal(predicate):
 3. `/fractal:patch` — fast path for trivial leaf predicates
 4. `/fractal:planning` → `/fractal:delivery` → `/fractal:review` → `/fractal:ship` — sprint cycle for complex predicates
 5. `/fractal:doctor` — tree integrity validation
+6. `/standards:generate` — inspect repo and generate `.claude/standards.md` (called by `/fractal:init` when no standards.md exists)
 
 Skills live in `commands/`. The evaluate subagent lives in `agents/evaluate.md`.
 
@@ -51,7 +52,7 @@ Skills live in `commands/`. The evaluate subagent lives in `agents/evaluate.md`.
 The filesystem IS the state. No database, no JSON.
 
 - `root.md` — root predicate + `active_node` pointer (always exactly one per tree)
-- `predicate.md` — per node: falsifiable condition, status (`pending|satisfied|pruned|candidate`)
+- `predicate.md` — per node: verifiable condition, status (`pending|satisfied|pruned|candidate`)
 - `discovery.md` — per node (after evaluation): node_type (`branch|leaf`), classification
 - `prd.md` — leaf nodes only: acceptance criteria, out-of-scope, constraints
 - Execution state derived from artifact presence:

@@ -71,7 +71,7 @@ Calibrate depth:
 - Existing repo with clear feature → light extraction
 - Trivial change → skip Phase 0, go straight to tree creation
 
-The goal: a single, falsifiable root predicate in the useful abstraction window.
+The goal: a single, verifiable root predicate in the useful abstraction window.
 
 ## Step 4: Tree creation
 
@@ -111,7 +111,7 @@ their children, not by a sprint. No `discovery.md` is written at init time. The 
 If no `.claude/standards.md` exists in the repo, use `AskUserQuestion` to offer:
 - Question: "Repo sem standards.md. Gerar draft automático?"
 - Options: "Sim, gerar" / "Pular"
-- If "Sim, gerar" → run `bash scripts/generate-standards.sh --write` via Bash tool
+- If "Sim, gerar" → invoke `/standards:generate`. Continue after it completes.
 - If "Pular" → continue
 
 6. Invoke `/fractal:run`. STOP.
@@ -139,7 +139,7 @@ When redefining an existing tree's objective:
 ## Rules
 
 - One question at a time. Never stack.
-- Push back on vague or unfalsifiable predicates.
+- Push back on vague or unverifiable predicates.
 - Phase 0 depth calibrated to context.
 - Single-tree constraint: never create a second tree. If tree exists → mutation or continue.
 - After tree creation or continue → always end with `/fractal:run`. STOP.
