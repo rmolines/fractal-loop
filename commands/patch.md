@@ -199,8 +199,18 @@ Result ready. What do you want to do?
 
 ### Adjust
 
-If the user requests an adjustment (any variation of "change X", "ajusta", "actually",
-"instead", etc.):
+If the user selects adjust (option 2) or requests a change (any variation of "change X",
+"ajusta", "actually", "instead", etc.):
+
+Use `AskUserQuestion` to get the adjustment description:
+
+```
+What do you want to change?
+```
+
+Then assess whether the adjustment requires code changes or is text/config-only:
+
+**If the adjustment touches code** (logic, new files, structural changes):
 
 Launch a new subagent in the **same worktree** with the adjustment request:
 
@@ -233,8 +243,13 @@ Apply the adjustment to the existing implementation. Run build and test after.
 Return a structured result in the same format as before.
 ```
 
-After the subagent completes, present results again (Phase 4). Loop until the user
-approves or discards.
+**If the adjustment is minor** (wording, small edits to 1-2 files, no logic changes):
+
+Apply the change inline using Edit tool directly — no need to spawn a subagent for
+trivial adjustments. Run build/test if configured.
+
+After the adjustment (either path), present results again (Phase 4) with updated diff.
+Loop until the user approves or discards.
 
 ### Discard
 
