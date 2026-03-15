@@ -31,7 +31,13 @@ Tree: $ARGUMENTS
 
 ### 2. SHOW
 
-Print exactly:
+Run the tree renderer and display its output:
+
+```bash
+bash "$FRACTAL_SCRIPTS/fractal-tree.sh" $ARGUMENTS
+```
+
+Then print:
 
 ```
 <breadcrumb>
