@@ -86,6 +86,7 @@ All scripts auto-discover the single tree in `.fractal/` when called without arg
 ## Conventions
 
 - One tree per repo, one active node per tree — enforced by `/fractal:init` and `/fractal:doctor`
+- **Session locks (`session.lock`) use `$PPID` — the PID of the invoking shell**, not the Claude process. Each `bash scripts/session-lock.sh` call spawns a short-lived shell; that shell's PID is freed immediately after the call returns. If the OS recycles the PID for an unrelated process, `pid_alive` returns `true` and the lock appears active forever. If `select-next-node.sh` reports `reason: all_pending_locked` but no parallel session is running, execute `bash scripts/session-lock.sh cleanup` from the repo root to clear stale locks. Locks are gitignored and invisible to `git status`.
 - Human validates at two moments: proposal (predicate makes sense) and result (predicate satisfied)
 - Every transition persists to disk BEFORE acting (idempotency guarantee)
 - Subagents always use `model: "sonnet"`, never opus

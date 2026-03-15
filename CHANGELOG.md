@@ -1,5 +1,12 @@
 # Changelog
 
+## guardrail-sessoes-paralelas — PR #7 — 2026-03-15
+**Type:** feat
+**Node:** guardrail-sessoes-paralelas
+**Commit:** `git show edd4d27`
+**What:** Session lock guardrails for parallel sessions. New `scripts/session-lock.sh` manages per-session lock files (`session.lock`) under each node directory. `scripts/select-next-node.sh` now filters out locked nodes and their ancestors/descendants, so concurrent sessions are forced onto sibling or cousin branches. `commands/run.md` creates the lock on focus and removes it on ASCEND. `references/filesystem.md` documents `session.lock`. Added `**/session.lock` to `.gitignore`. Plugin version bumped to 0.5.5.
+**Decisions:** see LEARNINGS.md#guardrail-sessoes-paralelas
+
 ## captura-adhoc — PR #6 — 2026-03-15
 **Type:** feat
 **Node:** propor-predicados/captura-adhoc
