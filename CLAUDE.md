@@ -63,9 +63,19 @@ The filesystem IS the state. No database, no JSON.
   - `plan.md` exists → planned (run delivery)
   - `plan.md` + `results.md` → executed (run review)
   - `plan.md` + `results.md` + `review.md` → reviewed (validate, then ship)
+- `conclusion.md` — per node (after satisfaction): what was achieved, key decisions, deferred items
 - `learnings.md` — accumulated human corrections (read on every `/fractal:run` entry)
 
 Directory name = kebab-case slug of predicate. Nesting = depth.
+
+### Tree as context (progressive disclosure)
+
+The tree is the single source of truth for project state. Navigate it in three levels:
+1. **Tree shape** — `bash scripts/fractal-tree.sh` (what exists, status of each node)
+2. **Conclusions** — read `conclusion.md` from satisfied nodes (what was achieved)
+3. **Sprint artifacts** — read `prd.md`, `plan.md`, etc. from specific nodes (implementation details)
+
+When entering a branch, read conclusions of satisfied children before acting. Full protocol: `references/context-protocol.md`.
 
 ### Scripts (`scripts/`)
 
@@ -82,6 +92,7 @@ All scripts auto-discover the single tree in `.fractal/` when called without arg
 - `references/filesystem.md` — filesystem schema and conventions
 - `references/learnings.md` — protocol for capturing human invalidations
 - `templates/schemas.md` — schemas for cycle artifacts (plan, results, review)
+- `references/context-protocol.md` — how the agent navigates the tree for progressive context loading
 - `references/statechart.ts` — XState v5 formal statechart (documentation)
 
 ## Conventions
