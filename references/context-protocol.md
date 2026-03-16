@@ -11,7 +11,7 @@ Run `bash scripts/fractal-tree.sh` to see all nodes, their status, and the activ
 Read `conclusion.md` from satisfied nodes to understand what was achieved. Each conclusion is 5-10 lines oriented toward the parent predicate. This answers: "what do I know about this project?"
 
 **Level 3 — Sprint artifacts (expensive, on demand):**
-Read `discovery.md`, `prd.md`, `plan.md`, `results.md`, `review.md` from specific nodes only when you need implementation details. This answers: "how exactly was this done?"
+Read `prd.md`, `plan.md`, `results.md`, `review.md` from specific nodes only when you need implementation details. This answers: "how exactly was this done?"
 
 ## When to load what
 
@@ -64,7 +64,7 @@ paths:
 
 When reading files in .fractal/:
 - conclusion.md contains what was achieved (oriented toward parent predicate)
-- discovery.md contains classification (branch/leaf) and proposed children
+- discovery.md contains the evaluator's last response (ephemeral — deleted on re-evaluation)
 - predicate.md contains the verifiable condition and status
 - Read conclusions of satisfied siblings before proposing new children for a branch
 ```
