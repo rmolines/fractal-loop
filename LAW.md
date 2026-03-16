@@ -17,19 +17,24 @@ fractal(predicate):
     return pruned
 
   if discovery.node_type == leaf:
-    prd ← specify(predicate, discovery.prd_seed)
-    human validates prd
-
-    if patch_can_satisfy(prd):
-      patch(prd)
-      human validates → satisfied | fractal(predicate)
+    if discovery.leaf_type == action:
+      present_action(predicate, discovery.prd_seed)
+      human reports evidence → satisfied | fractal(predicate)
 
     else:
-      planning(prd)
-      delivery(prd)
-      review(prd)
-      ship(prd)
-      human validates → satisfied | fractal(predicate)
+      prd ← specify(predicate, discovery.prd_seed)
+      human validates prd
+
+      if discovery.leaf_type == patch:
+        patch(prd)
+        human validates → satisfied | fractal(predicate)
+
+      else:  // cycle
+        planning(prd)
+        delivery(prd)
+        review(prd)
+        ship(prd)
+        human validates → satisfied | fractal(predicate)
 
   else:  // branch
     // evaluator proposed 3-5 candidates during discovery
@@ -46,12 +51,21 @@ This operation is fractal. It works identically at any scale — from "build a c
 
 The tree grows lazy — one child at a time. After a child is satisfied, the parent is re-evaluated: maybe it's now satisfiable, maybe it needs another child. The re-evaluation decides.
 
+### Leaf execution modes
+
+The evaluator classifies every leaf into one of three execution modes, persisted as `leaf_type` in `discovery.md`:
+
+- **patch** — resolves with a focused code change. Trivial scope, small blast radius, no architectural decisions. `/fractal:patch` handles it directly.
+- **cycle** — resolves with the full sprint: prd → plan → delivery → review → ship. Too complex or risky for a patch. Goes through the `specify` step first.
+- **action** — resolves with a real-world human action. The agent cannot execute this — it presents what needs to be done, the human performs the action and reports evidence. Examples: "discover client's main pain point", "validate pricing with 3 prospects". No code artifacts produced. Evidence is recorded in `discovery.md` or as a human note.
+
 ### Mapping to the execution cycle
 
-- **Discovery** = a formalized phase. The evaluator examines the predicate and repo context, classifies the node as branch or leaf, and writes `discovery.md`. For branches, it proposes candidate children. For leaves, it provides a `prd_seed` — the one-sentence scope of the PRD.
-- **Specify** = the step that turns a leaf's `prd_seed` into a full `prd.md` with acceptance criteria, out-of-scope, and constraints. Human validates before sprint begins.
-- **Planning → Delivery → Review → Ship** = the atomic execution unit for leaf predicates. Reads `prd.md` as primary requirement.
-- **Patch** = shortcut for leaf predicates too trivial for the full cycle.
+- **Discovery** = a formalized phase. The evaluator examines the predicate and repo context, classifies the node as branch or leaf (with `leaf_type`: patch, cycle, or action), and writes `discovery.md`. For branches, it proposes candidate children. For leaves, it provides a `prd_seed` — the one-sentence scope of the PRD (or, for `action` leaves, the evidence required).
+- **Specify** = the step that turns a leaf's `prd_seed` into a full `prd.md` with acceptance criteria, out-of-scope, and constraints. Human validates before sprint begins. Only applies to `patch` and `cycle` leaves.
+- **Planning → Delivery → Review → Ship** = the atomic execution unit for `cycle` leaf predicates. Reads `prd.md` as primary requirement.
+- **Patch** = shortcut for `patch` leaf predicates — trivially satisfiable without a full sprint.
+- **Action** = human-executed path for `action` leaf predicates — the agent presents the task, the human acts and reports back.
 
 ### The sprint cycle
 
@@ -95,7 +109,13 @@ Its output is persisted as `discovery.md` before routing. The fractal skill read
 
 **Predicate:** a condition that, when satisfied, constitutes progress toward the parent predicate. Not a task — a truth to be reached. Action emerges from the predicate. Predicates come in two kinds depending on how satisfaction is judged:
 
-**Verifiable predicate (leaf):** a predicate whose satisfaction can be confirmed objectively — by running a test, observing output, or checking a concrete condition. Base case of the recursion. Scope is clear enough that a PRD can be written and a sprint executed against it. Never has children.
+**Verifiable predicate (leaf):** a predicate whose satisfaction can be confirmed objectively — by running a test, observing output, or checking a concrete condition. Base case of the recursion. Never has children. Verification happens through one of three modes depending on the predicate's nature:
+
+- **test** — automated check confirms satisfaction (code, CI, integration test)
+- **observation** — human observes system behavior and confirms (demo, user flow, manual QA)
+- **evidence** — human performs a real-world action and reports what was learned (customer call, market research, stakeholder meeting)
+
+All three modes are falsifiable — they differ in mechanism, not in rigor. A predicate verified by evidence ("client's pain point is documented") is as legitimate as one verified by test ("API returns 200").
 
 **Satisfiable predicate (branch):** a predicate whose satisfaction is judged by the human. The human decides when the composition of children is "enough." There is no binary test — the human exercises bounded judgment over the whole. Never has `prd.md`, `plan.md`, or other sprint artifacts. Its truth is derived from its parts, but the derivation is a human call.
 
@@ -112,6 +132,12 @@ Its output is persisted as `discovery.md` before routing. The fractal skill read
 **Pruned:** a predicate the agent recognized as unachievable. Permanent at that node, but does not kill the parent — it forces re-evaluation and generation of another path.
 
 **Candidate:** a hypothetical sub-predicate generated during subdivision but not selected as the active child. Persists in the hierarchy for future discovery rounds. Not validated by the human until promoted to pending.
+
+**Leaf type:** classification of how a leaf predicate is satisfied. Determined by the evaluator during discovery and persisted in `discovery.md`.
+
+- **patch** — trivially satisfiable by a focused code change. No architectural decisions, clear scope, small blast radius.
+- **cycle** — requires the full sprint: prd → plan → delivery → review → ship. Too complex or risky for a patch.
+- **action** — satisfiable only by a human action in the real world. The agent cannot execute this — it presents what needs to be done, the human performs the action and reports evidence. Examples: "client's primary pain point is documented after discovery call", "pricing validated with 3 prospects", "team alignment confirmed in meeting". Evidence is recorded in the predicate's `discovery.md` or as a human note.
 
 ## The rules
 
