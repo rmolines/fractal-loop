@@ -280,10 +280,28 @@ created: <YYYY-MM-DD>
 Then:
 - **action** → present what the human needs to do. STOP. Human reports evidence on next `/fractal:run`.
 - **patch** → invoke `/fractal:patch <predicate text>`. STOP.
-- **sprint** → invoke `/fractal:planning <node_dir_path>`. STOP.
+- **sprint** → spawn the sprint agent to run the full cycle (planning → delivery → review → ship) without human gates:
 
-After execution completes (next `/fractal:run` invocation):
-- Check if execution produced results (patch artifacts, results.md, or human evidence).
+```
+Agent(
+  description: "sprint: <predicate slug>",
+  subagent_type: "fractal:sprint",
+  model: "sonnet",
+  prompt: "node_dir: <node_dir_path>\nrepo_root: <git root>"
+)
+```
+
+Wait for the sprint agent to complete. Parse its result: `status`, `summary`, `conclusion`.
+
+- If `status: success` → the sprint completed and shipped. Present to human (header: "Validacao"):
+  "📍 <breadcrumb> | <state>\n🎯 <active_predicate>\n\nSprint concluída e shipped. <summary>.\n\nO predicado foi satisfeito? (sim / nao)"
+  - **Yes** → write `status: satisfied` in `predicate.md`. → go to step 5 (ASCEND).
+  - **No** → capture learning in `.fractal/learnings.md`. Invoke `/fractal:run`. STOP.
+- If `status: review_rejected` → the review rejected twice. Present the rejection reasons to the human and ask for guidance.
+- If `status: failed` → report the error. STOP.
+
+After action leaf execution completes (next `/fractal:run` invocation):
+- Check if human reported evidence.
 - Use `AskUserQuestion` (header: "Validacao"): "O predicado foi satisfeito?"
 - **Yes** → write `status: satisfied` in `predicate.md`. Write `conclusion.md`. → go to step 5 (ASCEND).
 - **No** → capture learning in `.fractal/learnings.md`. Invoke `/fractal:run`. STOP.
@@ -398,11 +416,10 @@ If the user decides the root objective has changed mid-execution:
 
 ## Sprint cycle reference
 
-When EXECUTE chooses patch mode, invoke `/fractal:patch`. When EXECUTE chooses sprint mode, the cycle is:
+When EXECUTE chooses patch mode, invoke `/fractal:patch`. When EXECUTE chooses sprint mode, the sprint agent (`agents/sprint.md`) runs the full cycle:
 `/fractal:planning` → `/fractal:delivery` → `/fractal:review` → `/fractal:ship`
 
-These four skills form a closed cycle. They are always invoked in sequence.
-Each receives the node directory path as argument. Artifacts are saved inside the node dir.
+The sprint agent runs as a single subagent (Sonnet) with no human gates. The review is the internal quality gate — if it rejects, the sprint agent loops back (max 2 retries). Ship runs automatically on approval. The human validates the predicate after the sprint completes.
 
 ---
 

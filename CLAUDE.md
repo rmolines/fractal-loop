@@ -41,11 +41,11 @@ fractal(predicate):
 1. `/fractal:init` — bootstrap: extract objective, create tree
 2. `/fractal:run` — idempotent state machine (main entry point, call repeatedly)
 3. `/fractal:patch` — fast path for trivial leaf predicates
-4. `/fractal:planning` → `/fractal:delivery` → `/fractal:review` → `/fractal:ship` — sprint cycle for complex predicates
+4. Sprint agent (`agents/sprint.md`) — runs the full cycle `/fractal:planning` → `/fractal:delivery` → `/fractal:review` → `/fractal:ship` as a single Sonnet subagent with no human gates
 5. `/fractal:doctor` — tree integrity validation
 6. `/standards:generate` — inspect repo and generate `.claude/standards.md` (called by `/fractal:init` when no standards.md exists)
 
-Skills live in `commands/`. The evaluate subagent lives in `agents/evaluate.md`.
+Skills live in `commands/`. Subagents live in `agents/` (evaluate, sprint, patch-worker).
 
 ### On-disk state (`.fractal/` in target repo)
 
