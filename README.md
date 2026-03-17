@@ -17,42 +17,46 @@ It's a Claude Code plugin. Works on any project.
 
 ## How
 
-You give it a goal. The agent turns it into a verifiable condition: not "implement
-billing" but "users can pay monthly per seat via Stripe." Then it breaks that down,
-one piece at a time, always picking the piece that reduces the most uncertainty.
-
-When a piece is done, the parent gets re-evaluated. Maybe it's satisfied. Maybe it
-needs another piece. Maybe the whole direction was wrong and it prunes the branch
-and tries something else.
+You give it a goal. It turns that into a verifiable condition, breaks it down one
+piece at a time, and always picks the piece that reduces the most uncertainty.
 
 ```
-$ /fractal:init add billing to the app
+$ /fractal:init I want to build an open-source Granola — local meeting
+  recorder that transcribes and feeds context into Claude Code via MCP
 
-> Before I write the predicate: one-time payments, subscriptions, or both?
+> Before I write the root predicate: are you capturing system audio
+> (the call), microphone (your voice), or both?
 
-Both. Monthly plans, per-seat pricing.
+Both. I want the full conversation, locally, no cloud.
 
-> Predicate: "Users can subscribe to a monthly plan and be billed per seat
-> via Stripe, with changes taking effect immediately."
-> Create the node?
+> Predicate: "Users run a local MCP server that captures meeting audio,
+> transcribes it, and exposes structured notes to Claude Code —
+> no data leaves the machine."
+> Create the tree?
 
 Yes.
 
-> The biggest risk here is whether Stripe's API handles mid-cycle seat
-> changes cleanly. Starting with that.
-
-------- next day -------
-
-$ /fractal:run
-
-> Reading .fractal/stripe-billing/ ...
-> Active node: webhook-handler. plan.md exists, no results.md.
-> Picking up at delivery.
+> Biggest risk: whether macOS even allows capturing system audio
+> programmatically without a kernel extension. If it doesn't, the
+> entire approach changes. Starting with a spike on ScreenCaptureKit.
 ```
 
-Session dies, you come back, run `/fractal:run` with no arguments. It reads the
-filesystem and knows where it left off. The tree of predicates in `.fractal/` is
-the plan, the progress log, and the session state — all at once.
+A few days later:
+
+```
+$ /fractal:run
+
+> Reading tree... 8 nodes. 3 satisfied, 5 pending.
+> "screencapturekit-spike" satisfied — system audio capture works
+> without kernel extension on macOS 13+.
+> Re-evaluating parent... next risk: chunking live audio into
+> segments the transcription model can handle. Starting there.
+```
+
+Session dies, you come back, run `/fractal:run`. It reads the filesystem
+and picks up where it left off. When a piece is done, the parent gets
+re-evaluated — maybe it needs another piece, maybe the whole direction
+was wrong and it prunes the branch and tries something else.
 
 ## Install
 
