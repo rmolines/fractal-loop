@@ -2,7 +2,7 @@
 # view.sh — generates fractal-view.html from .fractal/ and commands/
 # Run from repo root: bash view.sh
 
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || (cd "$(dirname "$0")" && pwd))"
+REPO_ROOT="${1:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 FRACTAL_DIR="$REPO_ROOT/.fractal"
 COMMANDS_DIR="$REPO_ROOT/commands"
 OUTPUT="/tmp/fractal-view.html"
