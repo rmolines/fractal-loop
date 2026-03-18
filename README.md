@@ -60,7 +60,7 @@ was wrong and it prunes the branch and tries something else.
 Requires [Claude Code](https://claude.ai/code) with plugin support.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rmolines/fractal/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rmolines/fractal-loop/master/install.sh | bash
 ```
 
 Start a new session and run `/fractal:run` in any repo. Override the install path

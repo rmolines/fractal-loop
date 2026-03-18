@@ -363,7 +363,7 @@ The predicate tree unifies three things that are usually maintained separately: 
 
 Whether this is the right paradigm depends on a bet about model capability trajectories. If evaluators become reliable at the Opus level across the industry, Fractal Loop or something structurally similar is likely to converge as the correct approach. If evaluators plateau below that threshold, more elaborate verification mechanisms will be needed. We believe the trajectory favors the simple recursive structure, and this paper is a contribution to understanding why.
 
-The implementation is available at [https://github.com/rmolines/fractal](https://github.com/rmolines/fractal).
+The implementation is available at [https://github.com/rmolines/fractal-loop](https://github.com/rmolines/fractal-loop).
 
 ---
 

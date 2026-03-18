@@ -19,7 +19,7 @@ if [ -d "$INSTALL_DIR" ]; then
 else
   echo "Cloning to $INSTALL_DIR"
   mkdir -p "$(dirname "$INSTALL_DIR")"
-  git clone --quiet https://github.com/rmolines/fractal "$INSTALL_DIR"
+  git clone --quiet https://github.com/rmolines/fractal-loop "$INSTALL_DIR"
 fi
 
 # Resolve path for marketplace (replace $HOME with ~)
