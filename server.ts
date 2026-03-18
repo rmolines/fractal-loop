@@ -36,20 +36,14 @@ interface NodeInfo {
   children: NodeInfo[];
 }
 
-function statusIcon(status: string): string {
-  switch (status) {
-    case "satisfied": return "&#10003;";
-    case "pruned": return "&#10007;";
-    default: return "&#9675;";
-  }
-}
+const STATUS_ICON: Record<string, string> = { satisfied: "&#10003;", pruned: "&#10007;" };
+const STATUS_COLOR: Record<string, string> = { satisfied: "#22c55e", pruned: "#ef4444" };
 
-function statusColor(status: string): string {
-  switch (status) {
-    case "satisfied": return "#22c55e";
-    case "pruned": return "#ef4444";
-    default: return "#94a3b8";
-  }
+function statusIcon(s: string) { return STATUS_ICON[s] ?? "&#9675;"; }
+function statusColor(s: string) { return STATUS_COLOR[s] ?? "#94a3b8"; }
+
+function escapeHtml(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function readNodeChildren(dirPath: string, activeNode: string, parentRelPath: string): NodeInfo[] {
@@ -99,8 +93,8 @@ function renderNodeHtml(node: NodeInfo, depth: number): string {
   const indent = depth * 20;
 
   const truncated = node.predicate.length > 100 ? node.predicate.slice(0, 100) + "..." : node.predicate;
-  const escapedPredicate = truncated.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const escapedFull = node.predicate.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escapedPredicate = escapeHtml(truncated);
+  const escapedFull = escapeHtml(node.predicate);
 
   let html = `<li style="margin:4px 0;padding-left:${indent}px">`;
   html += `<span style="color:${color};font-size:1.1em;margin-right:6px">${icon}</span>`;
@@ -167,7 +161,7 @@ function renderPage(): string {
   for (const tree of trees) {
     const icon = statusIcon(tree.rootStatus);
     const color = statusColor(tree.rootStatus);
-    const escapedPred = tree.rootPredicate.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const escapedPred = escapeHtml(tree.rootPredicate);
 
     treesHtml += `<div class="tree" style="margin-bottom:32px">`;
     treesHtml += `<h2 style="color:#f1f5f9;margin:0 0 8px 0;font-size:1.1em">`;
