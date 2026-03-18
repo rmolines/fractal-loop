@@ -1,9 +1,5 @@
 # 🪾 Fractal Loop
 
-<p align="center">
-  <img src="assets/fractal-recursion.png" alt="Fractal Loop — recursive decomposition" width="600">
-</p>
-
 **Recursive project management for Claude Code. State a goal — it figures out what to do next.**
 
 ![version](https://img.shields.io/badge/version-0.9.0-blue) ![license](https://img.shields.io/badge/license-MIT-green)
@@ -13,6 +9,10 @@
 Fractal Loop is a Claude Code plugin that decomposes goals into verifiable predicates and always works on the riskiest unknown first. You state an objective. The agent picks the piece with the most uncertainty, works on it, then reassesses. When a path fails, it backs up and tries another. Same operation at every scale. Works on any project.
 
 ## How
+
+<p align="center">
+  <img src="assets/fractal-recursion.png" alt="Fractal Loop — recursive decomposition" width="600">
+</p>
 
 You give it a goal. It turns that into a verifiable condition, breaks it down one
 piece at a time, and always picks the piece that reduces the most uncertainty.
