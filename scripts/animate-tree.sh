@@ -425,17 +425,45 @@ function computeLayout() {
   const W = container.offsetWidth || 900;
   const result = {};
 
-  for (let d = 0; d <= maxDepth; d++) {
-    const nodes = byDepth[d] || [];
-    const count = nodes.length;
-    const totalW = count * CARD_W + (count - 1) * NODE_GAP;
-    const startX = Math.max(PADDING_SIDES, (W - totalW) / 2);
-    const y = PADDING_TOP + d * LEVEL_GAP;
-    nodes.forEach((node, i) => {
-      const x = startX + i * (CARD_W + NODE_GAP);
-      result[node.slug] = { x, y, cx: x + CARD_W / 2, cy: y + CARD_H / 2 };
+  // Build children map: { slug → [child_slug, ...] }
+  const childrenMap = {};
+  allNodes.forEach(n => { childrenMap[n.slug] = []; });
+  allNodes.forEach(n => {
+    if (n.parent && childrenMap[n.parent]) {
+      childrenMap[n.parent].push(n.slug);
+    }
+  });
+
+  // Bottom-up: compute subtree width (memoized)
+  const widthCache = {};
+  function subtreeWidth(slug) {
+    if (widthCache[slug] !== undefined) return widthCache[slug];
+    const kids = childrenMap[slug] || [];
+    const w = kids.length === 0
+      ? CARD_W
+      : Math.max(CARD_W, kids.reduce((s, k) => s + subtreeWidth(k), 0) + NODE_GAP * (kids.length - 1));
+    widthCache[slug] = w;
+    return w;
+  }
+
+  // Top-down: assign X positions, centering each node over its subtree block
+  const depthOf = Object.fromEntries(allNodes.map(n => [n.slug, n.depth]));
+  function assignX(slug, blockLeft) {
+    const w = subtreeWidth(slug);
+    const x = blockLeft + (w - CARD_W) / 2;
+    const y = PADDING_TOP + depthOf[slug] * LEVEL_GAP;
+    result[slug] = { x, y, cx: x + CARD_W / 2, cy: y + CARD_H / 2 };
+    let offset = 0;
+    (childrenMap[slug] || []).forEach(kid => {
+      assignX(kid, blockLeft + offset);
+      offset += subtreeWidth(kid) + NODE_GAP;
     });
   }
+
+  const rootW = subtreeWidth('root');
+  const startX = Math.max(PADDING_SIDES, (W - rootW) / 2);
+  assignX('root', startX);
+
   return result;
 }
 
