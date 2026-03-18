@@ -1,4 +1,4 @@
-# Fractal
+# 🪾 Fractal
 
 **Recursive project management for Claude Code. State a goal — it figures out what to do next.**
 
