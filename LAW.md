@@ -128,6 +128,14 @@ After ship marks `status: satisfied`, the ship step writes `conclusion.md` in th
 5. If yes → human validates/edits conclusion → `status: satisfied`
 6. If not → human says what's missing → generate new child
 
+### Objection satisfaction — durability requirement
+
+In objection mode, "satisfied" (refuted) means the capability is permanently encoded. The test: if every /tmp file were deleted and the session reset, would the agent still possess the capability?
+
+A one-time demonstration proves *possibility*. Refutation requires *encoding*: a committed skill, gate, standard, test, or documented conclusion that survives session reset.
+
+**Intrinsic exception:** Epistemic objections ("o agente não sabe X") are satisfied when the knowledge is captured as conclusion.md — the document IS the encoding. The durability test applies to capability claims, not one-time knowledge acts.
+
 ### Evaluate (Discovery)
 
 The mechanism that drives all branching and routing decisions in the primitive. An evaluate subagent receives a predicate, its existing children (with status and conclusions), and the full repo context. It returns exactly one of four responses:

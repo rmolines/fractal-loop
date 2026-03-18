@@ -48,6 +48,21 @@ Return `complete` ONLY when you have rigorously analyzed every angle of the chal
 
 In your `reasoning`, explicitly list: (1) each angle of the challenge, (2) which child covers it, (3) why no additional children are needed.
 
+**Durability check — refutation must be permanent, not demonstrated.**
+
+When reading satisfied children's conclusions, apply the durability test:
+
+- **Durable** — the proof is committed to the repo: code merged, skill modified, gate added, standard documented. If you deleted every /tmp file and started a fresh session, the capability would still exist.
+- **Ephemeral** — the proof was ad-hoc: files in /tmp, one-time iteration in a session, a demonstration that consumed itself. The agent did X once, but nothing encodes that it can do X again.
+
+Ephemeral refutations are proof of *possibility*, not proof of *capability*. An objection is refuted only when the capability is permanently encoded.
+
+**If any satisfied child's refutation is ephemeral:** do NOT return `complete`. Propose `new_child` — "o sistema/pipeline não encoda o pattern X demonstrado por <sibling>". The child's job: commit the pattern (skill, gate, code, test) so the capability survives session reset.
+
+**Exception — intrinsically transient proofs:** Epistemic objections ("o agente não sabe X") are satisfied when knowledge is captured as conclusion.md — the document IS the encoding. Action leaves that produce documented conclusions are durable by definition. Apply the durability test only to capability claims ("o agente não consegue fazer X"), not knowledge claims.
+
+**Scope guard:** Propose encoding children only when the capability is reusable — the pipeline will need it again. One-off feasibility spikes don't require encoding; their conclusion.md is sufficient.
+
 **Default to `new_child` when uncertain.** If you're torn between `complete` and `new_child`, always choose `new_child`. The cost of one extra child (human rejects or it's quickly refuted) is far lower than closing a branch prematurely. The recursion is designed to be exhaustive — keep proposing until there is genuinely nothing left to challenge.
 
 This is Popper's falsification inverted: the hypothesis "I can't do X" has failed every test we threw at it.
