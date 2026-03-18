@@ -1,5 +1,13 @@
 # Changelog
 
+## server-watcher-realtime — PR #17 — 2026-03-18
+**Type:** feat
+**Node:** server-watcher-realtime
+**Commit:** `488bf25`
+**Decisions:** see references/learnings.md#server-watcher-realtime
+
+Added `bun run server` entry point that serves the fractal tree at `localhost:3333/tree` with WebSocket live-reload on any `.fractal/` file change. Uses `openserver/watcher` for fs.watch + debounce. No heavy setup: one command, zero new external deps.
+
 ## layout-hierarquico-quebrado — PR #11 — 2026-03-17
 **Type:** feat
 **Node:** layout-hierarquico-quebrado
