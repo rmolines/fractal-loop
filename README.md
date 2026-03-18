@@ -8,11 +8,11 @@
 
 Fractal is a Claude Code plugin that decomposes goals into verifiable predicates and always works on the riskiest unknown first. You state an objective. The agent picks the piece with the most uncertainty, works on it, then reassesses. When a path fails, it backs up and tries another. Same operation at every scale. Works on any project.
 
+## How
+
 <p align="center">
   <img src="assets/fractal-recursion.png" alt="Fractal — recursive decomposition" width="600">
 </p>
-
-## How
 
 You give it a goal. It turns that into a verifiable condition, breaks it down one
 piece at a time, and always picks the piece that reduces the most uncertainty.
