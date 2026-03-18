@@ -2,15 +2,15 @@
 
 **Recursive project management for Claude Code. State a goal — it figures out what to do next.**
 
-<p align="center">
-  <img src="assets/fractal-recursion.png" alt="Fractal — recursive decomposition" width="600">
-</p>
-
 ![version](https://img.shields.io/badge/version-0.9.0-blue) ![license](https://img.shields.io/badge/license-MIT-green)
 
 [Install](#install) · [How it works](#how) · [Skills](#skills) · [Full spec](./LAW.md) · [Theory](./THEORY.md)
 
 Fractal is a Claude Code plugin that decomposes goals into verifiable predicates and always works on the riskiest unknown first. You state an objective. The agent picks the piece with the most uncertainty, works on it, then reassesses. When a path fails, it backs up and tries another. Same operation at every scale. Works on any project.
+
+<p align="center">
+  <img src="assets/fractal-recursion.png" alt="Fractal — recursive decomposition" width="600">
+</p>
 
 ## How
 
