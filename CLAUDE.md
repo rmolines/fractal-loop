@@ -19,6 +19,9 @@ bash scripts/fractal-tree.sh
 
 # Read active predicate
 bash scripts/active-predicate.sh
+
+# Timeline: concluded nodes newest-first
+bash scripts/fractal-timeline.sh
 ```
 
 No build step. No dependencies. Pure shell scripts + markdown skills.
