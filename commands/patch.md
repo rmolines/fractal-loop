@@ -1,5 +1,5 @@
 ---
-description: "Fast patch flow: implements in isolated worktree, presents result, user approves or discards. Use for changes where you already know what you want."
+description: "Fast iteration flow: implements a small, well-defined change in an isolated worktree, presents the result, user approves or discards. Use when you already know what to change — a conclusion from discussion, a quick fix, a small improvement. Triggers: 'vale um patch', 'faz esse ajuste', 'aplica essa mudança', 'implementa isso'."
 argument-hint: "description of the change"
 allowed-tools: AskUserQuestion
 ---

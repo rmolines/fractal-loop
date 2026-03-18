@@ -77,5 +77,8 @@ After crystallization and any investigation:
 | Greenfield, vague doubt, no prior work | Deep — multiple rounds, pre-mortem, investigation |
 | Existing project, specific concern | Light — crystallize + validate in one round |
 | Existing project, trivial doubt | Skip Phase 0 — go straight to the primitive |
+| User-formed falsifiable predicate | Skip Phase 0 — the evaluator decomposes nó a nó |
 
 Default to light inside an existing repo. Deep is the exception.
+
+**Heuristic for skip:** If the user brought the challenge already formed (concrete, decomposable, falsifiable), Phase 0 extraction is redundant — the evaluate-objection agent will find the dominant gaps as children. Phase 0 should be reserved for when the input is genuinely vague and needs Socratic extraction.

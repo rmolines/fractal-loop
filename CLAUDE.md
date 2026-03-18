@@ -107,3 +107,10 @@ All scripts auto-discover the tree in `.fractal/` when called without arguments.
 - Subagents use `model: "sonnet"` by default. Exception: the evaluate subagent (`agents/evaluate.md`) uses `model: "opus"` — it's the highest-leverage decision point in the system and runs once per node
 - The evaluate subagent (`agents/evaluate.md`) runs incremental evaluation — decides next step for each predicate (new_child, complete, leaf, or unachievable)
 - `AskUserQuestion` tool for all human gates (never plain text questions)
+
+## Fractal tree
+
+This repo uses a fractal predicate tree in `.fractal/` for project management.
+Run `bash scripts/fractal-tree.sh` to see current state.
+For project context, read `conclusion.md` files from satisfied nodes.
+See `references/context-protocol.md` in the fractal plugin for the full navigation protocol.

@@ -131,6 +131,22 @@ Using your understanding of the files read, determine values for each field. App
 **`staleness-check`**: default `false` (source: `default`)
 **`max-lines-per-file`**: mark as `# optional`
 
+### Workflow section
+
+**`pr-required`** (optional):
+- `.github/workflows/` contains branch protection or PR-related triggers → `true`
+- Nothing → default `false` (source: `default`)
+
+**`merge-strategy`** (optional):
+- `.github/` contains merge queue or squash config → detect strategy
+- Nothing → default `squash` (source: `default`)
+
+**`delete-branch-after-merge`** (optional):
+- Default `true` (source: `default`)
+
+**`require-push-after-edit`** (optional):
+- Default `false` (source: `default`)
+
 ### Deploy section
 
 **`platform`** (optional):
@@ -187,6 +203,16 @@ hot-file-preflight: false
 # detected from default
 staleness-check: false
 # max-lines-per-file: <int>   # optional
+
+## Workflow
+# detected from default
+pr-required: false
+# detected from default
+merge-strategy: squash
+# detected from default
+delete-branch-after-merge: true
+# detected from default
+require-push-after-edit: false
 
 ## Deploy
 # platform: <platform>   # optional

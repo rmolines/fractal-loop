@@ -39,6 +39,13 @@ simplify-after-delivery: <bool> # optional — if true, review skill checks for 
 hot-file-preflight: <bool>      # optional — if true, delivery skill reads hot files before editing
 staleness-check: <bool>         # optional — if true, planning skill checks for stale plan artifacts
 
+## Workflow
+# Controls PR flow, merge strategy, and post-edit behavior.
+pr-required: <bool>             # optional — if true, merges into protected branches require a PR
+merge-strategy: <strategy>      # optional — squash | merge | rebase (default: squash)
+delete-branch-after-merge: <bool>  # optional — if true, delete source branch after merge (default: true)
+require-push-after-edit: <bool> # optional — if true, skills ask to push/PR after edits
+
 ## Deploy
 platform: <platform>            # optional — e.g. railway | vercel | docker-compose | dmg
 verify: <command>               # optional — post-deploy health check command

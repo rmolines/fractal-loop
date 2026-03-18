@@ -23,6 +23,12 @@ simplify-after-delivery: true
 hot-file-preflight: true
 staleness-check: true
 
+## Workflow
+pr-required: true
+merge-strategy: squash
+delete-branch-after-merge: true
+require-push-after-edit: true
+
 ## Deploy
 platform: railway
 verify: curl -sf https://api.example.com/health

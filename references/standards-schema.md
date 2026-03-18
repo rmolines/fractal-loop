@@ -73,6 +73,19 @@ Quality thresholds and behavioral flags for delivery and review.
 
 ---
 
+## Section: Workflow
+
+Controls the development workflow: PR flow, merge strategy, and post-edit behavior.
+
+| Field | Type | Required | Default | Read by | Purpose |
+|---|---|---|---|---|---|
+| `pr-required` | bool | optional | false | ship | If `true`, all merges into protected branches must go through a PR. Ship skill blocks direct merges. |
+| `merge-strategy` | string | optional | squash | ship | How PRs are merged. Values: `squash`, `merge`, `rebase`. |
+| `delete-branch-after-merge` | bool | optional | true | ship | If `true`, ship skill deletes the source branch after successful merge. |
+| `require-push-after-edit` | bool | optional | false | patch, ship, delivery | If `true`, skills that edit files must ask the user whether to push/PR after completing edits. Prevents orphaned local commits. |
+
+---
+
 ## Section: Deploy
 
 Deployment target and CI integration settings.

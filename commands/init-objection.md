@@ -75,6 +75,7 @@ Calibrate depth:
 - New doubt with no prior evidence → deep extraction
 - Existing repo with a named risk → light extraction
 - Trivial concern → skip Phase 0, go straight to tree creation
+- **User-formed falsifiable predicate** → skip Phase 0. If the user brought a concrete, decomposable challenge (e.g. "não consegue me fazer substituir o Granola"), the evaluator will find the gaps as children. Phase 0 extraction is redundant when the framing is already clear.
 
 The goal: a single challenge in the useful abstraction window — a doubt specific enough to decompose, broad enough to survive implementation changes.
 
